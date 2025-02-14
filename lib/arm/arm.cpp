@@ -31,9 +31,9 @@ float calculateNewAngleWrist(float angleWrist, float angleShoulder, float angleE
 
         float fourBarInputAngle = (r2d(fourBarTheta3Prime) - angleShoulder);
         return fourBarInputAngle;
-    }
+}
 
-    void setMotors(float angleShoulder, float angleElbow, float angleWrist, float angleBase) {
+void setMotors(float angleShoulder, float angleElbow, float angleWrist, float angleBase) {
     
     // Calculate new wrist angle. This is always necessary since the wrist angle depends on the angle of all other joints.
     float angleWristMotor = calculateNewAngleWrist(angleWrist, angleShoulder, currentAngleElbow) - calculateNewAngleWrist(currentAngleWrist, currentAngleShoulder, angleElbow);
@@ -129,13 +129,13 @@ void rollWrist(float time){
     analogWrite(ROLL_EN_PIN, 0);
     digitalWrite(IN_1_PIN, LOW);
     digitalWrite(IN_2_PIN, LOW);
-    }
+}
 
-    // IMPORTANT \\
-    // WHEN YOU START THE ARM UP IT DOESNT KNOW WHERE IT IS
-    // CALL THIS FUNCTION BEFORE YOU MOVE ANY JOINTS
-    // BEFORE FLASHING THE CODE, SET THESE VALUES TO THE APPROXIMATE CURRENT ANGLES OF EACH JOINT
-    void initialiseAngles(){
+// IMPORTANT \\
+// WHEN YOU START THE ARM UP IT DOESNT KNOW WHERE IT IS
+// CALL THIS FUNCTION BEFORE YOU MOVE ANY JOINTS
+// BEFORE FLASHING THE CODE, SET THESE VALUES TO THE APPROXIMATE CURRENT ANGLES OF EACH JOINT
+void initialiseAngles(){
     currentAngleBase = 0;
     currentAngleShoulder = -100;
     currentAngleElbow = 160;
