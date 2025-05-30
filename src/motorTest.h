@@ -1,12 +1,25 @@
-#include "arduino.h"
-#include "Servo.h"
-volatile float motor_0_val = 0;
-volatile float motor_1_val = 0;
-volatile float motor_2_val = 0;
-volatile float motor_3_val = 0;
-volatile float motor_4_val = 0;
+#define _TIMERINTERRUPT_LOGLEVEL_ 0
 
-// Set all pin numbers for various motors.
+#define USE_TIMER_1 true
+
+#if (defined(__AVR_ATmega644__) || defined(__AVR_ATmega644A__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644PA__) ||                   \
+     defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_NANO) || defined(ARDUINO_AVR_MINI) || defined(ARDUINO_AVR_ETHERNET) ||                        \
+     defined(ARDUINO_AVR_FIO) || defined(ARDUINO_AVR_BT) || defined(ARDUINO_AVR_LILYPAD) || defined(ARDUINO_AVR_PRO) ||                            \
+     defined(ARDUINO_AVR_NG) || defined(ARDUINO_AVR_UNO_WIFI_DEV_ED) || defined(ARDUINO_AVR_DUEMILANOVE) || defined(ARDUINO_AVR_FEATHER328P) ||    \
+     defined(ARDUINO_AVR_METRO) || defined(ARDUINO_AVR_PROTRINKET5) || defined(ARDUINO_AVR_PROTRINKET3) || defined(ARDUINO_AVR_PROTRINKET5FTDI) || \
+     defined(ARDUINO_AVR_PROTRINKET3FTDI))
+#define USE_TIMER_2 true
+#warning Using Timer1
+#else
+#define USE_TIMER_3 true
+#warning Using Timer3
+#endif
+
+#include "Arduino.h"
+#include "TimerInterrupt.h"
+#include "samsCerial.h"
+
+
 #define stepShoulder 10
 #define dirShoulder  11
 #define opShoulder 12
@@ -17,18 +30,61 @@ volatile float motor_4_val = 0;
 #define opElbow   6
 #define enElbow      7
 
-#define stepWrist    30
-#define dirWrist     29
-#define enWrist      28
-
 #define stepBase     45
 #define dirBase      47
 #define opBase       44
 #define enBase       46
 
-#define enRoll       9
-#define in1          4
-#define in2          5
+int    errShoulder;
+int    errElbow;
+int    errBase;
+
+int motorStepsShoulder = 0;
+int motorStepsElbow = 0;
+int motorStepsBase = 0;
+unsigned int interval = 5; 
+int volatile targetSteps = 0;
+int error;
+int dir=0;
+
+void StepHandleShoulder()
+{
+    static bool toggle = false;
+    digitalWrite(stepShoulder, toggle);
+    toggle = !toggle;
+    if(toggle){motorStepsShoulder=motorStepsShoulder+1*dir;}
+    
+}
+void StepHandleElbow()
+{
+    static bool toggle = false;
+    digitalWrite(stepElbow, toggle);
+    toggle = !toggle;
+    if(toggle){motorStepsElbow=motorStepsElbow+1*dir;}
+    
+}
+
+void StepHandleBase()
+{
+    static bool toggle = false;
+    digitalWrite(stepBase, toggle);
+    toggle = !toggle;
+    if(toggle){motorStepsBase=motorStepsBase+1*dir;}
+    
+}
+
+
+
+#include "arduino.h"
+#include "Servo.h"
+volatile float motor_0_val = 0;
+volatile float motor_1_val = 0;
+volatile float motor_2_val = 0;
+volatile float motor_3_val = 0;
+volatile float motor_4_val = 0;
+
+// Set all pin numbers for various motors.
+
 
 #define PI 3.14
 
@@ -112,28 +168,6 @@ public:
         period = pr;
     }
 
-    // Function to return the angle the wrist base gear should move to to attain a given wrist angle. 
-    // The kinematics are complex so just trust they work.
-    float calculateNewAngleWrist(float angleWrist, float angleShoulder, float angleElbow){
-        float fourBarTheta2 = d2r(angleWrist + 90);
-        float fourBarDiagonal = sq(fourBarL1) + sq(fourBarL2) - 2*fourBarL1*fourBarL2*cos(fourBarTheta2);
-        float fourBarCosTheta4 = (sq(fourBarL3) + sq(fourBarL4) - fourBarDiagonal) / (2*fourBarL3*fourBarL4);
-        float fourBarSinTheta4 = sqrt(1 - sq(fourBarCosTheta4));
-        float fourBarTheta4 = atan2(fourBarSinTheta4, fourBarCosTheta4);
-        float fourBarTheta3 = d2r(180) - asin(fourBarL2*sin(fourBarTheta2)/sqrt(fourBarDiagonal)) - asin(fourBarL4*sin(fourBarTheta4)/sqrt(fourBarDiagonal));
-        float fourBarAlpha = d2r(angleShoulder+angleElbow);
-
-        float fourBarTheta2Prime = d2r(angleElbow) + fourBarTheta3 + fourBarBeta;
-        float fourBarAlphaPrime = fourBarAlpha - d2r(angleElbow);
-        float fourBarDiagonalPrime = sq(fourBarL5) + sq(fourBarL6) - 2*fourBarL5*fourBarL6*cos(fourBarTheta2Prime);
-        float fourBarCosTheta4Prime = (sq(fourBarL7) + sq(fourBarL8) - fourBarDiagonalPrime) / (2*fourBarL7*fourBarL8);
-        float fourBarSinTheta4Prime = sqrt(1 - sq(fourBarCosTheta4Prime));
-        float fourBarTheta4Prime = atan2(fourBarSinTheta4Prime, fourBarCosTheta4Prime);
-        float fourBarTheta3Prime = d2r(180) - asin(fourBarL6*sin(fourBarTheta2Prime)/sqrt(fourBarDiagonalPrime)) - asin(fourBarL8*sin(fourBarTheta4Prime)/sqrt(fourBarDiagonalPrime));
-
-        float fourBarInputAngle = (r2d(fourBarTheta3Prime) - angleShoulder);
-        return fourBarInputAngle;
-    }
 
   // Function to set all motors to desired angles.
   void setMotors(float angleShoulder, float angleElbow, float angleWrist, float angleBase) {
@@ -142,9 +176,6 @@ public:
     float newAngleWrist = currentAngleWrist + angleWrist;
     float newAngleBase = currentAngleBase + angleBase;
     
-    // Calculate new wrist angle. This is always necessary since the wrist angle depends on the angle of all other joints.
-    float angleWristMotor = calculateNewAngleWrist(angleWrist, angleShoulder, currentAngleElbow) - calculateNewAngleWrist(currentAngleWrist, currentAngleShoulder, angleElbow);
-
     // Convert all motor angles to number of steps to be sent to motors.
     // Shoulder and base only change angle when their motors are told to. 
     uint32_t stepsShoulder = abs(newAngleShoulder - currentAngleShoulder) * gearRatioShoulder * static_cast<float>(steps) / 360.0;
@@ -152,161 +183,94 @@ public:
     // Elbow changes angle when its motor moves, but also when the elbow motor moves due to the physical implementation of power transmission.
     uint32_t stepsElbow = abs(newAngleElbow - currentAngleElbow + newAngleShoulder - currentAngleShoulder) * gearRatioElbow * static_cast<float>(steps) / 360.0;
     // Wrist angle has been dealt with above.
-    uint32_t stepsWrist = abs(angleWristMotor) * gearRatioWrist * static_cast<float>(steps) / 360.0;
-    
+
     // Ensure all motors rotate in correct direction. From fully extend forward, moving any link "up" should be a negative angle, "down" should be positive.
     // Ensure all motors rotate in correct direction. From fully extend forward, moving any link "up" should be a negative angle, "down" should be positive.
     digitalWrite(dirShoulder, newAngleShoulder > currentAngleShoulder ? LOW : HIGH);
     digitalWrite(dirElbow, newAngleElbow + newAngleShoulder > currentAngleElbow + currentAngleShoulder ? HIGH : LOW);
-    digitalWrite(dirWrist, angleWristMotor>0 ? LOW : HIGH);
     digitalWrite(dirBase, newAngleBase > currentAngleBase ? HIGH : LOW);
 
     // Find out which motor has the most steps to take.
-    uint32_t maxStep = max(max(stepsShoulder, stepsElbow), max(stepsWrist, stepsBase));
+    uint32_t maxStep = max(max(stepsShoulder, stepsElbow), stepsBase);
 
     // In order to move all motors simultaneously, a Bresenham algorithm is used. Each motor has an "error" between current angle and desired angle.
     // Each motor takes a steps when its error gets too big.
     // This way all motors rotate simultaneously for the same duration.
     // Initialise error here.
-    int32_t errShoulder = stepsShoulder - maxStep / 2;
-    int32_t errElbow = stepsElbow - maxStep / 2;
-    int32_t errWrist = stepsWrist - maxStep / 2;
-    int32_t errBase = stepsBase - maxStep / 2;
 
-    unsigned long currentMicros = micros();
-        if (errShoulder >= 0) {
-          Serial.println(stepsShoulder);
-          Serial.println("Error "+ String(errShoulder));
-          if (currentMicros - lastTimeShoulder >= period){
-            Serial.print("hi");
-            digitalWrite(stepShoulder, HIGH);
-            delayMicroseconds(2);
-            digitalWrite(stepShoulder, LOW);
-            delayMicroseconds(2);
-            lastTimeShoulder = currentMicros;
-          }
-          errShoulder -= 1;
+    
+    handleSerial();
+    // int32_t errShoulder = stepsShoulder - maxStep / 2;
+    // int32_t errElbow = stepsElbow - maxStep / 2;
+    // int32_t errBase = stepsBase - maxStep / 2;
+
+        errShoulder = stepsShoulder-motorStepsShoulder;
+        errElbow = stepsElbow-motorStepsElbow;
+        errBase= stepsBase-motorStepsBase;
+        if(errShoulder>0){
+            dir = 1;
+            digitalWrite(dirShoulder,HIGH);
+            ITimer1.enableTimer(); 
+        }else if(errShoulder<0){
+            dir = -1;
+            digitalWrite(dirShoulder,LOW);
+            ITimer1.enableTimer(); 
+        }else{
+            ITimer1.disableTimer();
         }
-        //Serial.print("no");
-        //errShoulder += stepsShoulder;
-
-        if (errElbow >= 0) {
-          if (currentMicros - lastTimeElbow >= period){
-            digitalWrite(stepElbow, HIGH);
-            delayMicroseconds(2);
-            digitalWrite(stepElbow, LOW);
-            delayMicroseconds(2);
-            errElbow -= 1;
-            lastTimeElbow = currentMicros;
-          }
+        if(errElbow>0){
+            dir = 1;
+            digitalWrite(dirElbow,HIGH);
+            ITimer2.enableTimer(); 
+        }else if(errElbow<0){
+            dir = -1;
+            digitalWrite(dirElbow,LOW);
+            ITimer2.enableTimer(); 
+        }else{
+            ITimer2.disableTimer();
         }
-        errElbow += stepsElbow;
-
-        if (errWrist >= 0) {
-          if (currentMicros - lastTimeWrist >= period){
-            digitalWrite(stepWrist, HIGH);
-            delayMicroseconds(2);
-            digitalWrite(stepWrist, LOW);
-            delayMicroseconds(2);
-            errWrist -= 1;
-            lastTimeWrist = currentMicros;
-          }
+        if(errBase>0){
+            dir = 1;
+            digitalWrite(dirElbow,HIGH);
+            ITimer3.enableTimer(); 
+        }else if(errBase<0){
+            dir = -1;
+            digitalWrite(dirBase,LOW);
+            ITimer3.enableTimer(); 
+        }else{
+            ITimer3.disableTimer();
         }
-        errWrist += stepsWrist;
-
-        if (errBase >= 0) {
-          if (currentMicros - lastTimeBase >= period){
-            digitalWrite(stepBase, HIGH);
-            delayMicroseconds(2);
-            digitalWrite(stepBase, LOW);
-            delayMicroseconds(2);
-            errBase -= 1;
-            lastTimeBase = currentMicros;
-          }
-        }
-        errBase += stepsBase;
-
-    // Send each motor a square pulse when the error gets too high.
-    // for (uint32_t i = 0; i < maxStep; i++) {
-    //     Serial.println(String(errShoulder));
-    //     if (errShoulder >= 0) {
-    //       if (currentMicros - lastTimeShoulder >= period){
-    //         Serial.print("hi");
-    //         digitalWrite(stepShoulder, HIGH);
-    //         delayMicroseconds(50);
-    //         digitalWrite(stepShoulder, LOW);
-    //         delayMicroseconds(50);
-    //         lastTimeShoulder = currentMicros;
-    //       }
-    //       errShoulder -= maxStep;
-    //     }
-    //     //Serial.print("no");
-    //     errShoulder += stepsShoulder;
-
-    //     if (errElbow >= 0) {
-    //       if (currentMicros - lastTimeElbow >= period){
-    //         digitalWrite(stepElbow, HIGH);
-    //         delayMicroseconds(2);
-    //         digitalWrite(stepElbow, LOW);
-    //         delayMicroseconds(2);
-    //         errElbow -= maxStep;
-    //         lastTimeElbow = currentMicros;
-    //       }
-    //     }
-    //     errElbow += stepsElbow;
-
-    //     if (errWrist >= 0) {
-    //       if (currentMicros - lastTimeWrist >= period){
-    //         digitalWrite(stepWrist, HIGH);
-    //         delayMicroseconds(2);
-    //         digitalWrite(stepWrist, LOW);
-    //         delayMicroseconds(2);
-    //         errWrist -= maxStep;
-    //         lastTimeWrist = currentMicros;
-    //       }
-    //     }
-    //     errWrist += stepsWrist;
-
-    //     if (errBase >= 0) {
-    //       if (currentMicros - lastTimeBase >= period){
-    //         digitalWrite(stepBase, HIGH);
-    //         delayMicroseconds(2);
-    //         digitalWrite(stepBase, LOW);
-    //         delayMicroseconds(2);
-    //         errBase -= maxStep;
-    //         lastTimeBase = currentMicros;
-    //       }
-    //     }
-    //     errBase += stepsBase;
-    // }
+        
 
     // Update the current angles after all movements are completed. In reality this should be done via encoders.
+    if (errShoulder == 0 && errBase == 0 && errElbow == 0){
     currentAngleShoulder += angleShoulder;
     currentAngleElbow += angleElbow;
     currentAngleWrist += angleWrist;
     currentAngleBase += angleBase;
+    }
 }
 
   // The wrist "roll" (rotation around its axis) is controlled by a brushed DC motor.
   // Time is the time in ms to rotate by. Start with a small time and see how it goes. 500 is a good starting point.
-  void rollWrist(float time){
-      // Set inputs of H-Bridge adequately to direciton of rotation.
-      if (time>0){
-        analogWrite(enRoll, 200);
-        digitalWrite(in1, HIGH);
-        digitalWrite(in2, LOW);
-        delay(time);
-      } else {
-        analogWrite(enRoll, 200);
-        digitalWrite(in1, LOW);
-        digitalWrite(in2, HIGH);
-        delay(-time);
-      }
-      // Stop motor
-      analogWrite(enRoll, 0);
-      digitalWrite(in1, LOW);
-      digitalWrite(in2, LOW);
-    }
+//   void rollWrist(float time){
+//       // Set inputs of H-Bridge adequately to direciton of rotation.
+//       if (time>0){
+//         analogWrite(enRoll, 200);
+//         digitalWrite(in1, HIGH);
+//         digitalWrite(in2, LOW);
+//         delay(time);
+//       } else {
+//         analogWrite(enRoll, 200);
+//         digitalWrite(in1, LOW);
+//         digitalWrite(in2, HIGH);
+//         delay(-time);
+//       }
+//       // Stop motor
+//       analogWrite(enRoll, 0);
+//       digitalWrite(in1, LOW);
+//       digitalWrite(in2, LOW);
+//     }
 
     // IMPORTANT \\
     // WHEN YOU START THE ARM UP IT DOESNT KNOW WHERE IT IS
@@ -383,3 +347,60 @@ public:
     }
 };
 
+
+
+
+
+
+
+
+
+void setup()
+{
+    if (ITimer1.attachInterruptInterval(5, StepHandleShoulder))
+    {
+        Serial.print(F("Starting  ITimer1 OK, millis() = "));
+        Serial.println(millis());
+    }
+    if (ITimer2.attachInterruptInterval(5, StepHandleElbow))
+    {
+        Serial.print(F("Starting  ITimer2 OK, millis() = "));
+        Serial.println(millis());
+    }
+    if (ITimer3.attachInterruptInterval(5, StepHandleBase))
+    {
+        Serial.print(F("Starting  ITimer3 OK, millis() = "));
+        Serial.println(millis());
+    }
+    ITimer1.init();
+    ITimer2.init();
+    ITimer3.init();
+    pinMode(SHOULDER_STEP, OUTPUT);
+    pinMode(SHOULDER_DIR, OUTPUT);
+    pinMode(SHOULDER_OPTO, OUTPUT);
+    pinMode(SHOULDER_EN, OUTPUT);
+    digitalWrite(SHOULDER_DIR, LOW);
+    digitalWrite(SHOULDER_OPTO, HIGH);
+    digitalWrite(SHOULDER_EN, HIGH);
+    Serial.begin(115200);
+}
+
+void loop()
+{      
+
+    handleSerial();
+    error = targetSteps-motorStepsShoulder;
+    if(error>0){
+        dir = 1;
+        digitalWrite(SHOULDER_DIR,HIGH);
+        ITimer1.enableTimer(); 
+    }else if(error<0){
+        dir = -1;
+        digitalWrite(SHOULDER_DIR,LOW);
+        ITimer1.enableTimer(); 
+    }else{
+        ITimer1.disableTimer();
+    }
+    Serial.println(error);
+    
+}
