@@ -17,21 +17,43 @@ void setup() {
   xTaskCreate(
     debugTask,           // Function name
     "DEBUG",             // Text name
-    debugStackSize,      // Stack size (bytes)
+    DEBUG_TASK_STACK_SIZE,      // Stack size (bytes)
     NULL,                // Parameter for task
     DEBUG_TASK_PRIORITY, // Priority
     &debugTaskHandle     // Pointer
   );
 #endif
 
-#if ARM_TASK_ENABLE
+#if ENCODER_TASK_ENABLE
   xTaskCreate(
-    armTask,
-    "ARM_TASK",
-    armStackSize,
+    encoderTask,
+    "ENCODER_TASK",
+    ENCODER_TASK_STACK_SIZE,
     NULL,
-    ARM_TASK_PRIORITY,
-    &armTaskHandle
+    ENCODER_TASK_PRIORITY,
+    &encoderTaskHandle
+  );
+#endif
+
+#if SERIAL_TASK_ENABLE
+  xTaskCreate(
+    serialTask,
+    "SERIAL_TASK",
+    SERIAL_TASK_STACK_SIZE,
+    NULL,
+    SERIAL_TASK_PRIORITY,
+    &serialTaskHandle
+  );
+#endif
+
+#if CONTROL_TASK_ENABLE
+  xTaskCreate(
+    controlTask,
+    "CONTROL_TASK",
+    CONTROL_TASK_STACK_SIZE,
+    NULL,
+    CONTROL_TASK_PRIORITY,
+    &controlTaskHandle
   );
 #endif
 

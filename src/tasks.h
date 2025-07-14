@@ -11,10 +11,14 @@
 
 // Task Handles
 extern TaskHandle_t debugTaskHandle;
-extern TaskHandle_t armTaskHandle;
+extern TaskHandle_t encoderTaskHandle;
+extern TaskHandle_t serialTaskHandle;
+extern TaskHandle_t controlTaskHandle;
 
 // Tasks
 void debugTask(void *pvParameters);
-void armTask(void *pvParameters);
+void encoderTask(void *pvParameters);
+void serialTask(void *pvParameters);
+void controlTask(void *pvParameters);
 
 #endif
