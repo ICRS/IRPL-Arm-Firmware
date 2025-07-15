@@ -21,4 +21,37 @@ void encoderTask(void *pvParameters);
 void serialTask(void *pvParameters);
 void controlTask(void *pvParameters);
 
+// Shared Types
+enum MessageType {
+    PING,
+    DES_ANG,
+    DES_POS,
+    CUR_ANG,
+    CUR_POS,
+    ERROR,
+};
+
+enum SerialErrorCode {
+    NOT_SERIAL_MSG,
+    NO_KEY_VAL_PAIR,
+    UNKNOWN_EXECUTION,
+    UNKNOWN_KEY,
+};
+
+struct Message {
+    MessageType type;
+    union {
+        int pingValue;     // PING
+        int motorID;        // ALL EXCEPT PING, ERROR
+        int errorCode;      // ERROR
+    };
+    union {
+        int angleValue;     // DES_ANG, CUR_ANG
+        int positionValue;  // DES_POS, CUR_POS
+    };
+};
+
+// Functions
+void motorCommand(int ID, int newValue, bool isAngle);
+
 #endif

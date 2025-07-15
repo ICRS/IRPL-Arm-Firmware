@@ -9,6 +9,9 @@
 TaskHandle_t controlTaskHandle = nullptr;
 
 // === EXTERNALS === //
+void motorCommand(int ID, int newValue, bool isAngle){
+    // TODO: Implement
+}
 
 // === TASK === //
 
