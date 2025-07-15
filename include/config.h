@@ -3,7 +3,21 @@
 
 #include <Arduino.h>
 
-// Set all pin numbers for various motors.
+// Joint IDs
+#define BASE_ID     0
+#define SHOULDER_ID 1
+#define ELBOW_ID    2
+#define WRIST_ID    3
+
+#define ROLL_ID     4
+#define GRASP_ID    5
+
+// Set all pin numbers for various motors. 
+//TODO: UPDATE FOR NEW ARM BOARD
+#define BASE_STEP_PIN     31
+#define BASE_DIR_PIN      32
+#define BASE_EN_PIN       40
+
 #define SHOULDER_STEP_PIN 24
 #define SHOULDER_DIR_PIN  23
 #define SHOULDER_EN_PIN   22
@@ -16,16 +30,20 @@
 #define WRIST_DIR_PIN     29
 #define WRIST_EN_PIN      28
 
-#define BASE_STEP_PIN     31
-#define BASE_DIR_PIN      32
-#define BASE_EN_PIN       40
-
 #define ROLL_EN_PIN       9
 #define IN_1_PIN          4
 #define IN_2_PIN          5
 
-// Pi for degree-radian conversions
-#define PI 3.141
+// Set all pin numbers for various encoders
+//TODO: UPDATE FOR NEW ARM BOARD
+#define N_ENCODERS 4
+#define ENC_SCL_PIN 22
+#define ENC_SDA_PIN 21
+
+#define BASE_ENC_ADDR
+#define SHOULDER_ENC_ADDR
+#define ELBOW_ENC_ADDR
+#define WRIST_END_ADDR
 
 // Arm initialisers
 
@@ -54,6 +72,7 @@
 #define FOUR_BAR_BETA_DEG -101.42;
 
 // === TASKS === //
+#define HARDWARE_TIMER_PRESCALER 80 // FOR AN ESP32
 
 // DEBUG Task
 #define DEBUG_TASK_ENABLE false
@@ -62,8 +81,8 @@
 #define DEBUG_TASK_PRIORITY 1
 
 // ENCODER Task
-#define ENCODER_TASK_ENABLE false
-#define ENCODER_TASK_FREQUENCY 100
+#define ENCODER_TASK_ENABLE true
+#define ENCODER_TASK_FREQUENCY 50
 #define ENCODER_TASK_STACK_SIZE 5000
 #define ENCODER_TASK_PRIORITY 4
 

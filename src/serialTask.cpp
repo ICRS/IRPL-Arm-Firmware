@@ -14,6 +14,8 @@ std::queue<Message> incomingMessages;
 
 // === EXTERNALS === //
 
+std::array<int, N_ENCODERS> desiredAngleArray;
+
 // === FUNCTIONS === //
 
 // Takes a single message string e.g. "<DESIRED_ANGLE:2,90>" and formats to a Message object

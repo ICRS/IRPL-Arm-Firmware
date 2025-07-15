@@ -7,6 +7,9 @@
 
 // === SETUP === //
 
+// Hardware timers
+hw_timer_t *encoderTimer = NULL;
+
 void setup() {
 
   Serial.begin(115200);
@@ -33,6 +36,11 @@ void setup() {
     ENCODER_TASK_PRIORITY,
     &encoderTaskHandle
   );
+
+  encoderTimer = timerBegin(1, HARDWARE_TIMER_PRESCALER, true);
+  timerAttachInterrupt(encoderTimer, sampleEncodersISR, true);
+  timerAlarmWrite(encoderTimer, (APB_CLK_FREQ/HARDWARE_TIMER_PRESCALER)/ENCODER_TASK_FREQUENCY, true);
+  timerAlarmEnable(encoderTimer);
 #endif
 
 #if SERIAL_TASK_ENABLE
