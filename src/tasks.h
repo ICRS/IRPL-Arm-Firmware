@@ -21,10 +21,6 @@ void encoderTask(void *pvParameters);
 void serialTask(void *pvParameters);
 void controlTask(void *pvParameters);
 
-// Global variables
-extern std::array<float, N_ENCODERS> desiredAngleArray;
-extern std::array<float, N_ENCODERS> currentAngleArray;
-
 // Shared Types
 enum MessageType {
     PING,

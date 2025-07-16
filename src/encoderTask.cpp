@@ -14,7 +14,7 @@ std::array<AS5600, N_ENCODERS> encoderArray;
 std::array<float, N_ENCODERS> encoderPositionArray;
 
 // === EXTERNALS === //
-std::array<float, N_ENCODERS> currentAngleArray;
+extern std::array<float, N_ENCODERS> currentAngleArray;
 
 // === INTERRUPT === //
 

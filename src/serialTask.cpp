@@ -14,7 +14,7 @@ std::queue<Message> incomingMessages;
 
 // === EXTERNALS === //
 
-std::array<float, N_ENCODERS> desiredAngleArray;
+extern std::array<float, N_ENCODERS> desiredAngleArray;
 
 // === FUNCTIONS === //
 

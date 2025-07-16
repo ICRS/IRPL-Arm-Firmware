@@ -12,7 +12,7 @@ TaskHandle_t controlTaskHandle = nullptr;
 
 //Specify the links and initial tuning parameters
 double Kp=2, Ki=0, Kd=0;
-int Setpoint, Input, Output;
+double Setpoint, Input, Output;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 std::array<int, N_ENCODERS> stepPinArray;
@@ -35,8 +35,12 @@ float angleChangeWristMotor;
 
 // === EXTERNALS === //
 
-std::array<float, N_ENCODERS> desiredAngleArray;
-std::array<float, N_ENCODERS> currentAngleArray;
+extern std::array<float, N_ENCODERS> desiredAngleArray;
+extern std::array<float, N_ENCODERS> currentAngleArray;
+
+void motorCommand(int ID, int newValue, bool isAngle){
+
+};
 
 // === FUNCTIONS === //
 
