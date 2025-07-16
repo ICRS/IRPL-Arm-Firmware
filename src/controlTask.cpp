@@ -39,7 +39,13 @@ extern std::array<float, N_ENCODERS> desiredAngleArray;
 extern std::array<float, N_ENCODERS> currentAngleArray;
 
 void motorCommand(int ID, int newValue, bool isAngle){
-
+    if (isAngle){
+        desiredAngleArray[ID] = newValue;
+    }
+    else{
+        Serial.println("Functionality to go to position is not valid");
+        //TODO: Remove DES_POS messages
+    }
 };
 
 // === FUNCTIONS === //
