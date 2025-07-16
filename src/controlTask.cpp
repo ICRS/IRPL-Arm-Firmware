@@ -11,13 +11,13 @@
 TaskHandle_t controlTaskHandle = nullptr;
 
 //Specify the links and initial tuning parameters
-double Kp=2, Ki=5, Kd=1;
+double Kp=2, Ki=0, Kd=0;
 int Setpoint, Input, Output;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 std::array<int, N_ENCODERS> stepPinArray;
 
-std::array<int, N_ENCODERS> newAngleArray;
+std::array<float, N_ENCODERS> newAngleArray;
 
 std::array<uint32_t, N_ENCODERS> stepsNum;
 std::array<uint8_t, N_ENCODERS> stepsDir;
@@ -35,8 +35,8 @@ float angleChangeWristMotor;
 
 // === EXTERNALS === //
 
-std::array<uint32_t, N_ENCODERS> desiredAngleArray;
-std::array<uint32_t, N_ENCODERS> currentAngleArray;
+std::array<float, N_ENCODERS> desiredAngleArray;
+std::array<float, N_ENCODERS> currentAngleArray;
 
 // === FUNCTIONS === //
 
@@ -77,12 +77,12 @@ float calculateNewAngleWrist(float angleWrist, float newAngleShoulder, float ang
 void updateSteps(){
     // Convert new and current motor angles to number of steps to be sent to motors.
     // Shoulder and base only change angle when their motors are told to. 
-    stepsOut[SHOULDER_ID] = abs(newAngleShoulder - currentAngleShoulder) * GEAR_RATIO_SHOULDER * static_cast<float>(DEFAULT_STEPS) / 360.0;
-    stepsOut[BASE_ID] = abs(newAngleBase - currentAngleBase) * GEAR_RATIO_BASE * static_cast<float>(DEFAULT_STEPS) / 360.0;
+    stepsNum[SHOULDER_ID] = abs(newAngleShoulder - currentAngleShoulder) * GEAR_RATIO_SHOULDER * static_cast<float>(DEFAULT_STEPS) / 360.0;
+    stepsNum[BASE_ID] = abs(newAngleBase - currentAngleBase) * GEAR_RATIO_BASE * static_cast<float>(DEFAULT_STEPS) / 360.0;
     // Elbow changes angle when its motor moves, but also when the elbow motor moves due to the physical implementation of power transmission.
-    stepsOut[ELBOW_ID] = abs(newAngleElbow - currentAngleElbow + newAngleShoulder - currentAngleShoulder) * GEAR_RATIO_ELBOW * static_cast<float>(DEFAULT_STEPS) / 360.0;
+    stepsNum[ELBOW_ID] = abs(newAngleElbow - currentAngleElbow + newAngleShoulder - currentAngleShoulder) * GEAR_RATIO_ELBOW * static_cast<float>(DEFAULT_STEPS) / 360.0;
     // Wrist angle has been dealt with above.
-    stepsOut[WRIST_ID] = abs(angleChangeWristMotor) * GEAR_RATIO_WRIST * static_cast<float>(DEFAULT_STEPS) / 360.0;
+    stepsNum[WRIST_ID] = abs(angleChangeWristMotor) * GEAR_RATIO_WRIST * static_cast<float>(DEFAULT_STEPS) / 360.0;
     
     // Ensure all motors rotate in correct direction. From fully extend forward, moving any link "up" should be a negative angle, "down" should be positive.
     stepsDir[SHOULDER_ID] = (newAngleShoulder > currentAngleShoulder ? LOW : HIGH);
@@ -130,8 +130,8 @@ void writeToMotors(){
     digitalWrite(BASE_DIR_PIN, stepsDir[BASE_ID]);
 
     // Pulses each stepper motor in turn
-    bool nonzeroSteps = true
-    while(nonzeroSteps){
+    bool nonzeroSteps = true;
+    while (nonzeroSteps){
         nonzeroSteps = false;
         for(int i = 0; i<N_ENCODERS; i++){
             if(stepsNum[i]>0){
@@ -140,7 +140,7 @@ void writeToMotors(){
                 nonzeroSteps = true;
                 while(micros()-startTime<DEFAULT_PERIOD){}
                 digitalWrite(stepPinArray[i], LOW);
-                unsigned long startTime = micros();
+                startTime = micros();
                 stepsNum[i] = stepsNum[i]-1;
                 while(micros()-startTime<DEFAULT_PERIOD){}
                 //TODO: this can be parallelised

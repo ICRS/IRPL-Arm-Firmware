@@ -48,28 +48,28 @@
 // Arm initialisers
 
 // Period of square wave to steppers.
-#define DEFAULT_PERIOD 500;
+#define DEFAULT_PERIOD 500
 
-#define DEFAULT_STEPS 400;
+#define DEFAULT_STEPS 400
 
-#define GEAR_RATIO_SHOULDER 100.0;
-#define GEAR_RATIO_ELBOW 50.0;
-#define GEAR_RATIO_WRIST 91.8;
-#define GEAR_RATIO_BASE 102.0;
-#define UPPER_ARM_LENGTH 325;
-#define FORE_ARM_LENGTH 330;
-#define GRIPPER_LENGTH 195;
+#define GEAR_RATIO_SHOULDER 100.0
+#define GEAR_RATIO_ELBOW 50.0
+#define GEAR_RATIO_WRIST 91.8
+#define GEAR_RATIO_BASE 102.0
+#define UPPER_ARM_LENGTH 325
+#define FORE_ARM_LENGTH 330
+#define GRIPPER_LENGTH 195
 
-#define FOUR_BAR_L1 330;
-#define FOUR_BAR_L2 110;
-#define FOUR_BAR_L3 142.147;
-#define FOUR_BAR_L4 330;
-#define FOUR_BAR_L5 325;
-#define FOUR_BAR_L6 142.147;
-#define FOUR_BAR_L7 200;
-#define FOUR_BAR_L8 320;
+#define FOUR_BAR_L1 330
+#define FOUR_BAR_L2 110
+#define FOUR_BAR_L3 142.147
+#define FOUR_BAR_L4 330
+#define FOUR_BAR_L5 325
+#define FOUR_BAR_L6 142.147
+#define FOUR_BAR_L7 200
+#define FOUR_BAR_L8 320
 
-#define FOUR_BAR_BETA_DEG -101.42;
+#define FOUR_BAR_BETA_DEG -101.42
 
 // === TASKS === //
 #define HARDWARE_TIMER_PRESCALER 80 // FOR AN ESP32

@@ -22,8 +22,8 @@ void serialTask(void *pvParameters);
 void controlTask(void *pvParameters);
 
 // Global variables
-extern std::array<uint32_t, N_ENCODERS> desiredAngleArray;
-extern std::array<uint32_t, N_ENCODERS> currentAngleArray;
+extern std::array<float, N_ENCODERS> desiredAngleArray;
+extern std::array<float, N_ENCODERS> currentAngleArray;
 
 // Shared Types
 enum MessageType {
@@ -50,7 +50,7 @@ struct Message {
         int errorCode;      // ERROR
     };
     union {
-        int angleValue;     // DES_ANG, CUR_ANG
+        float angleValue;     // DES_ANG, CUR_ANG
         int positionValue;  // DES_POS, CUR_POS
     };
 };

@@ -14,7 +14,7 @@ std::queue<Message> incomingMessages;
 
 // === EXTERNALS === //
 
-std::array<int, N_ENCODERS> desiredAngleArray;
+std::array<float, N_ENCODERS> desiredAngleArray;
 
 // === FUNCTIONS === //
 
@@ -61,7 +61,7 @@ Message parseMessage(String input){
     else if (key == "DES_ANG"){
         output.type = MessageType::DES_ANG;
         output.motorID = value1.toInt();
-        output.angleValue = value2.toInt();
+        output.angleValue = value2.toFloat();
     }
     else if (key == "DES_POS"){
         output.type = MessageType::DES_POS;
