@@ -22,9 +22,8 @@ void serialTask(void *pvParameters);
 void controlTask(void *pvParameters);
 
 // Global variables
-extern std::array<int, N_ENCODERS> motorPositionArray;
-extern std::array<int, N_ENCODERS> currentAngleArray;
-extern std::array<int, N_ENCODERS> desiredAngleArray;
+extern std::array<uint32_t, N_ENCODERS> desiredAngleArray;
+extern std::array<uint32_t, N_ENCODERS> currentAngleArray;
 
 // Shared Types
 enum MessageType {
