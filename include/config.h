@@ -31,6 +31,7 @@
 #define WRIST_EN_PIN      28
 
 #define ROLL_EN_PIN       9
+#define GRASP_PIN         8
 #define IN_1_PIN          4
 #define IN_2_PIN          5
 
@@ -48,9 +49,12 @@
 // Arm initialisers
 
 // Period of square wave to steppers.
-#define DEFAULT_PERIOD 500
-
+#define STEPPER_PERIOD 500
 #define DEFAULT_STEPS 400
+
+#define SERVO_FREQUENCY 330
+#define SERVO_MINIMUM 500
+#define SERVO_MAXIMUM 2500
 
 #define GEAR_RATIO_SHOULDER 100.0
 #define GEAR_RATIO_ELBOW 50.0

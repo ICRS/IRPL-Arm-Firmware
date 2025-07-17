@@ -4,6 +4,7 @@
 #include "config.h"
 
 #include "PID_v1.h"
+#include <ESP32Servo.h>
 
 // === GLOBAL VARIABLES === //
 
@@ -14,6 +15,9 @@ TaskHandle_t controlTaskHandle = nullptr;
 double Kp=2, Ki=0, Kd=0;
 double Setpoint, Input, Output;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+
+// Create Servo object
+Servo gripper;
 
 std::array<int, N_ENCODERS> stepPinArray;
 
@@ -38,17 +42,66 @@ float angleChangeWristMotor;
 extern std::array<float, N_ENCODERS> desiredAngleArray;
 extern std::array<float, N_ENCODERS> currentAngleArray;
 
+void operateGripper(float normalisedSpeed);
+void rollWrist(float time);
+
 void motorCommand(int ID, int newValue, bool isAngle){
     if (isAngle){
-        desiredAngleArray[ID] = newValue;
+        if (ID <= WRIST_ID){
+            desiredAngleArray[ID] = newValue;
+        }
+        else if (ID == GRASP_ID){
+            operateGripper(newValue);
+        }
+        else if (ID == ROLL_ID){
+            rollWrist(newValue);
+        }
     }
     else{
         Serial.println("Functionality to go to position is not valid");
         //TODO: Remove DES_POS messages
     }
-};
+}
 
 // === FUNCTIONS === //
+
+// Gripper is controlled by a continuous servo. 
+// The servo can't read its current angle so it just goes forward and backwards when told to go to limit angles.
+// Input is speed of opening the gripper, with +1 opening and -1 closing (max speeds)
+// e.g. operateGripper(-0.5) will close the gripper at half its maximum speed.
+void operateGripper(float normalisedSpeed){
+    // Limit speed
+    if (abs(normalisedSpeed) > 1){
+        normalisedSpeed = (normalisedSpeed<0) ? -1 : 1;
+    }
+    // Since the servo is continuous, writing an angle of "90" to it will stop it
+    // And writing maximum angles (0, 180) to it maximises its speed in either direction
+    // http://www.spt-servo.com/Product/5621733416.html
+    gripper.write(90 + (85*normalisedSpeed));
+    //TODO: Add a time limit
+}
+
+ // The wrist "roll" (rotation around its axis) is controlled by a brushed DC motor.
+  // Time is the time in ms to rotate by. Start with a small time and see how it goes. 500 is a good starting point.
+  void rollWrist(float time){
+    // Set inputs of H-Bridge adequately to direction of rotation.
+    if (time>0){
+        analogWrite(ROLL_EN_PIN, 200);
+        digitalWrite(IN_1_PIN, HIGH);
+        digitalWrite(IN_2_PIN, LOW);
+    } else {
+        analogWrite(ROLL_EN_PIN, 200);
+        digitalWrite(IN_1_PIN, LOW);
+        digitalWrite(IN_2_PIN, HIGH);
+        time = -time;
+    }
+    unsigned long startRollTime = micros();
+    while (micros() - startRollTime < 2*abs(time)){};
+    // Stop motor
+    analogWrite(ROLL_EN_PIN, 0);
+    digitalWrite(IN_1_PIN, LOW);
+    digitalWrite(IN_2_PIN, LOW);
+}
 
 // Angle manipulation functions.
 // Degree to radians.
@@ -148,11 +201,11 @@ void writeToMotors(){
                 digitalWrite(stepPinArray[i], HIGH);
                 unsigned long startTime = micros();
                 nonzeroSteps = true;
-                while(micros()-startTime<DEFAULT_PERIOD){}
+                while(micros()-startTime<STEPPER_PERIOD){}
                 digitalWrite(stepPinArray[i], LOW);
                 startTime = micros();
                 stepsNum[i] = stepsNum[i]-1;
-                while(micros()-startTime<DEFAULT_PERIOD){}
+                while(micros()-startTime<STEPPER_PERIOD){}
                 //TODO: this can be parallelised
             }
         }
@@ -183,6 +236,14 @@ void initMotors(){
     pinMode(ROLL_EN_PIN, OUTPUT);
     pinMode(IN_1_PIN, OUTPUT);
     pinMode(IN_2_PIN, OUTPUT);
+
+    // Allow allocation of all timers
+	ESP32PWM::allocateTimer(0);
+	ESP32PWM::allocateTimer(1);
+	ESP32PWM::allocateTimer(2);
+	ESP32PWM::allocateTimer(3);
+    gripper.setPeriodHertz(SERVO_FREQUENCY);
+    gripper.attach(GRASP_PIN, SERVO_MINIMUM, SERVO_MAXIMUM); // set up gripper servo on pin 8
 }
 
 void initStepPinArray(){
