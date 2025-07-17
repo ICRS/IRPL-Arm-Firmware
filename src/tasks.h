@@ -25,7 +25,6 @@ void controlTask(void *pvParameters);
 enum MessageType {
     PING,
     DES_ANG,
-    DES_POS,
     CUR_ANG,
     CUR_POS,
     ERROR,
@@ -47,12 +46,12 @@ struct Message {
     };
     union {
         float angleValue;     // DES_ANG, CUR_ANG
-        int positionValue;  // DES_POS, CUR_POS
+        int positionValue;  // CUR_POS
     };
 };
 
 // Functions
-void motorCommand(int ID, int newValue, bool isAngle);
+void motorCommand(int ID, int newValue);
 
 // Interrupts
 void IRAM_ATTR sampleEncodersISR();

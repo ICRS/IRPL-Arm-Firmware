@@ -45,21 +45,15 @@ extern std::array<float, N_ENCODERS> currentAngleArray;
 void operateGripper(float normalisedSpeed);
 void rollWrist(float time);
 
-void motorCommand(int ID, int newValue, bool isAngle){
-    if (isAngle){
-        if (ID <= WRIST_ID){
-            desiredAngleArray[ID] = newValue;
-        }
-        else if (ID == GRASP_ID){
-            operateGripper(newValue);
-        }
-        else if (ID == ROLL_ID){
-            rollWrist(newValue);
-        }
+void motorCommand(int ID, int newValue){
+    if (ID <= WRIST_ID){
+        desiredAngleArray[ID] = newValue;
     }
-    else{
-        Serial.println("Functionality to go to position is not valid");
-        //TODO: Remove DES_POS messages
+    else if (ID == GRASP_ID){
+        operateGripper(newValue);
+    }
+    else if (ID == ROLL_ID){
+        rollWrist(newValue);
     }
 }
 
