@@ -21,16 +21,10 @@ void encoderTask(void *pvParameters);
 void serialTask(void *pvParameters);
 void controlTask(void *pvParameters);
 
-// Global variables
-extern std::array<int, N_ENCODERS> motorPositionArray;
-extern std::array<int, N_ENCODERS> currentAngleArray;
-extern std::array<int, N_ENCODERS> desiredAngleArray;
-
 // Shared Types
 enum MessageType {
     PING,
-    DES_ANG,
-    DES_POS,
+    DES_VAL,
     CUR_ANG,
     CUR_POS,
     ERROR,
@@ -41,6 +35,7 @@ enum SerialErrorCode {
     NO_KEY_VAL_PAIR,
     UNKNOWN_EXECUTION,
     UNKNOWN_KEY,
+    UNKNOWN_MOTOR,
 };
 
 struct Message {
@@ -51,13 +46,14 @@ struct Message {
         int errorCode;      // ERROR
     };
     union {
-        int angleValue;     // DES_ANG, CUR_ANG
-        int positionValue;  // DES_POS, CUR_POS
+        float motorValue;     // DES_VAL, CUR_ANG
+        int positionValue;  // CUR_POS
     };
 };
 
 // Functions
-void motorCommand(int ID, int newValue, bool isAngle);
+int motorCommand(int ID, int newValue);
+float motorStatus(int ID, bool isAngle);
 
 // Interrupts
 void IRAM_ATTR sampleEncodersISR();

@@ -14,7 +14,7 @@ std::queue<Message> incomingMessages;
 
 // === EXTERNALS === //
 
-std::array<int, N_ENCODERS> desiredAngleArray;
+extern std::array<float, N_ENCODERS> desiredAngleArray;
 
 // === FUNCTIONS === //
 
@@ -58,15 +58,10 @@ Message parseMessage(String input){
         output.type = MessageType::PING;
         output.pingValue = value1.toInt();
     }
-    else if (key == "DES_ANG"){
-        output.type = MessageType::DES_ANG;
+    else if (key == "DES_VAL"){
+        output.type = MessageType::DES_VAL;
         output.motorID = value1.toInt();
-        output.angleValue = value2.toInt();
-    }
-    else if (key == "DES_POS"){
-        output.type = MessageType::DES_POS;
-        output.motorID = value1.toInt();
-        output.positionValue = value2.toInt();
+        output.motorValue = value2.toFloat();
     }
     else if (key == "CUR_ANG"){
         output.type = MessageType::CUR_ANG;
@@ -90,20 +85,27 @@ void executeCommand(Message message){
         case MessageType::PING:
             returnString = "<PONG:"+ String(message.pingValue) + ">";
             break;
-        case MessageType::DES_ANG:
-            motorCommand(message.motorID, message.angleValue, true);
-            returnString = "Moving motor "+ String(message.motorID) +" to angle "+ String(message.angleValue); //TODO: comment out after testing
-            break;
-        case MessageType::DES_POS:
-            motorCommand(message.motorID, message.positionValue, false);
-            returnString = "Moving motor "+ String(message.motorID) +" to position "+ String(message.positionValue); //TODO: comment out after testing
+        case MessageType::DES_VAL:
+            if (motorCommand(message.motorID, message.motorValue) == -1){
+                returnString = "<ERROR_CODE:" + String(SerialErrorCode::UNKNOWN_MOTOR) + ">";
+            }
+            else {
+                returnString = "Changing motor "+ String(message.motorID) +" to value "+ String(message.motorValue); //TODO: comment out after testing
+            }
             break;
         case MessageType::CUR_ANG:
-            returnString = "<CUR_ANG:"+ String(100) +","+ String(90) + ">"; //TODO: add data once encoder task implemented
-            break;
         case MessageType::CUR_POS:
-            returnString = "<CUR_POS:"+ String(101) +","+ String(1024) + ">"; //TODO: add data once encoder task implemented
-            break;
+            {   
+                float returnVal = motorStatus(message.motorID, (message.type==MessageType::CUR_ANG));
+                if (returnVal == JOINT_ERROR){
+                    returnString = "<ERROR_CODE:" + String(SerialErrorCode::UNKNOWN_MOTOR) + ">";
+                } 
+                else{
+                    String code = (message.type==MessageType::CUR_ANG)? "<CUR_ANG:" : "<CUR_POS:";
+                    returnString = code + String(returnVal) + ">";
+                }
+                break;
+            } //DO NOT REMOVE THESE BRACKETS OR THIS SWITCH CASE WILL BREAK
         case MessageType::ERROR:
             returnString = "<ERROR_CODE:" + String(message.errorCode) + ">";
             break;

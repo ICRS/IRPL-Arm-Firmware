@@ -5,10 +5,16 @@
 
 #include "freertos/task.h"
 
-// === SETUP === //
+// === GLOBAL VARIABLES === //
+
+// Global variables
+std::array<float, N_ENCODERS> desiredAngleArray;
+std::array<float, N_ENCODERS> currentAngleArray;
 
 // Hardware timers
 hw_timer_t *encoderTimer = NULL;
+
+// === SETUP === //
 
 void setup() {
 

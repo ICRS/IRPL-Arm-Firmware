@@ -14,9 +14,7 @@ std::array<AS5600, N_ENCODERS> encoderArray;
 std::array<float, N_ENCODERS> encoderPositionArray;
 
 // === EXTERNALS === //
-
-std::array<int, N_ENCODERS> motorPositionArray;
-std::array<int, N_ENCODERS> currentAngleArray;
+extern std::array<float, N_ENCODERS> currentAngleArray;
 
 // === INTERRUPT === //
 
