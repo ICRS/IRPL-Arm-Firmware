@@ -18,6 +18,9 @@ PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 // Create Servo object
 Servo gripper;
+float gripperSpeed = 0;
+
+int wristVelocity = 0;
 
 std::array<int, N_ENCODERS> stepPinArray;
 
@@ -45,7 +48,7 @@ extern std::array<float, N_ENCODERS> currentAngleArray;
 void operateGripper(float normalisedSpeed);
 void rollWrist(float time);
 
-void motorCommand(int ID, int newValue){
+int motorCommand(int ID, int newValue){
     if (ID <= WRIST_ID){
         desiredAngleArray[ID] = newValue;
     }
@@ -55,6 +58,28 @@ void motorCommand(int ID, int newValue){
     else if (ID == ROLL_ID){
         rollWrist(newValue);
     }
+    else{
+        return -1;
+    }
+    return 0;
+}
+
+float motorStatus(int ID, bool isAngle){
+    if (ID <= WRIST_ID){
+        if (isAngle){
+            return currentAngleArray[ID];
+        }
+        else{
+            return float(stepsNum[ID]);
+        }
+    }
+    else if (ID == GRASP_ID){
+        return gripperSpeed;
+    }
+    else if (ID == ROLL_ID){
+        return float(wristVelocity);
+    }
+    else return JOINT_ERROR; //TODO: This is a terrible solution to throwing an error, need to change
 }
 
 // === FUNCTIONS === //
@@ -71,7 +96,9 @@ void operateGripper(float normalisedSpeed){
     // Since the servo is continuous, writing an angle of "90" to it will stop it
     // And writing maximum angles (0, 180) to it maximises its speed in either direction
     // http://www.spt-servo.com/Product/5621733416.html
-    gripper.write(90 + (85*normalisedSpeed));
+    float newGripperSpeed = 90 + (85*normalisedSpeed);
+    gripperSpeed = newGripperSpeed;
+    gripper.write(newGripperSpeed);
     //TODO: Add a time limit
 }
 
@@ -89,12 +116,15 @@ void operateGripper(float normalisedSpeed){
         digitalWrite(IN_2_PIN, HIGH);
         time = -time;
     }
+    wristVelocity = (time > 0) ? 1 : -1;
+
     unsigned long startRollTime = micros();
     while (micros() - startRollTime < 2*abs(time)){};
     // Stop motor
     analogWrite(ROLL_EN_PIN, 0);
     digitalWrite(IN_1_PIN, LOW);
     digitalWrite(IN_2_PIN, LOW);
+    wristVelocity = 0;
 }
 
 // Angle manipulation functions.

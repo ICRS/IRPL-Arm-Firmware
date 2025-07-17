@@ -86,15 +86,26 @@ void executeCommand(Message message){
             returnString = "<PONG:"+ String(message.pingValue) + ">";
             break;
         case MessageType::DES_VAL:
-            motorCommand(message.motorID, message.motorValue);
-            returnString = "Changing motor "+ String(message.motorID) +" to value "+ String(message.motorValue); //TODO: comment out after testing
+            if (motorCommand(message.motorID, message.motorValue) == -1){
+                returnString = "<ERROR_CODE:" + String(SerialErrorCode::UNKNOWN_MOTOR) + ">";
+            }
+            else {
+                returnString = "Changing motor "+ String(message.motorID) +" to value "+ String(message.motorValue); //TODO: comment out after testing
+            }
             break;
         case MessageType::CUR_ANG:
-            returnString = "<CUR_ANG:"+ String(100) +","+ String(90) + ">"; //TODO: add data once encoder task implemented
-            break;
         case MessageType::CUR_POS:
-            returnString = "<CUR_POS:"+ String(101) +","+ String(1024) + ">"; //TODO: add data once encoder task implemented
-            break;
+            {   
+                float returnVal = motorStatus(message.motorID, (message.type==MessageType::CUR_ANG));
+                if (returnVal == JOINT_ERROR){
+                    returnString = "<ERROR_CODE:" + String(SerialErrorCode::UNKNOWN_MOTOR) + ">";
+                } 
+                else{
+                    String code = (message.type==MessageType::CUR_ANG)? "<CUR_ANG:" : "<CUR_POS:";
+                    returnString = code + String(returnVal) + ">";
+                }
+                break;
+            } //DO NOT REMOVE THESE BRACKETS OR THIS SWITCH CASE WILL BREAK
         case MessageType::ERROR:
             returnString = "<ERROR_CODE:" + String(message.errorCode) + ">";
             break;

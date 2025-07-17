@@ -35,6 +35,7 @@ enum SerialErrorCode {
     NO_KEY_VAL_PAIR,
     UNKNOWN_EXECUTION,
     UNKNOWN_KEY,
+    UNKNOWN_MOTOR,
 };
 
 struct Message {
@@ -51,7 +52,8 @@ struct Message {
 };
 
 // Functions
-void motorCommand(int ID, int newValue);
+int motorCommand(int ID, int newValue);
+float motorStatus(int ID, bool isAngle);
 
 // Interrupts
 void IRAM_ATTR sampleEncodersISR();

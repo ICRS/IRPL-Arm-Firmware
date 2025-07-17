@@ -12,6 +12,8 @@
 #define ROLL_ID     4
 #define GRASP_ID    5
 
+#define JOINT_ERROR -1.01
+
 // Set all pin numbers for various motors. 
 //TODO: UPDATE FOR NEW ARM BOARD
 #define BASE_STEP_PIN     31
@@ -45,8 +47,6 @@
 #define SHOULDER_ENC_ADDR
 #define ELBOW_ENC_ADDR
 #define WRIST_END_ADDR
-
-// Arm initialisers
 
 // Period of square wave to steppers.
 #define STEPPER_PERIOD 500
@@ -85,7 +85,7 @@
 #define DEBUG_TASK_PRIORITY 1
 
 // ENCODER Task
-#define ENCODER_TASK_ENABLE false
+#define ENCODER_TASK_ENABLE true
 #define ENCODER_TASK_FREQUENCY 50
 #define ENCODER_TASK_STACK_SIZE 5000
 #define ENCODER_TASK_PRIORITY 4
@@ -97,7 +97,7 @@
 #define SERIAL_TASK_PRIORITY 2
 
 // CONTROL Task
-#define CONTROL_TASK_ENABLE false
+#define CONTROL_TASK_ENABLE true
 #define CONTROL_TASK_FREQUENCY 10
 #define CONTROL_TASK_STACK_SIZE 5000
 #define CONTROL_TASK_PRIORITY 3
