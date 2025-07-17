@@ -24,7 +24,7 @@ void controlTask(void *pvParameters);
 // Shared Types
 enum MessageType {
     PING,
-    DES_ANG,
+    DES_VAL,
     CUR_ANG,
     CUR_POS,
     ERROR,
@@ -45,7 +45,7 @@ struct Message {
         int errorCode;      // ERROR
     };
     union {
-        float angleValue;     // DES_ANG, CUR_ANG
+        float motorValue;     // DES_VAL, CUR_ANG
         int positionValue;  // CUR_POS
     };
 };

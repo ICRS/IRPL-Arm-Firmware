@@ -58,10 +58,10 @@ Message parseMessage(String input){
         output.type = MessageType::PING;
         output.pingValue = value1.toInt();
     }
-    else if (key == "DES_ANG"){
-        output.type = MessageType::DES_ANG;
+    else if (key == "DES_VAL"){
+        output.type = MessageType::DES_VAL;
         output.motorID = value1.toInt();
-        output.angleValue = value2.toFloat();
+        output.motorValue = value2.toFloat();
     }
     else if (key == "CUR_ANG"){
         output.type = MessageType::CUR_ANG;
@@ -85,9 +85,9 @@ void executeCommand(Message message){
         case MessageType::PING:
             returnString = "<PONG:"+ String(message.pingValue) + ">";
             break;
-        case MessageType::DES_ANG:
-            motorCommand(message.motorID, message.angleValue);
-            returnString = "Moving motor "+ String(message.motorID) +" to angle "+ String(message.angleValue); //TODO: comment out after testing
+        case MessageType::DES_VAL:
+            motorCommand(message.motorID, message.motorValue);
+            returnString = "Changing motor "+ String(message.motorID) +" to value "+ String(message.motorValue); //TODO: comment out after testing
             break;
         case MessageType::CUR_ANG:
             returnString = "<CUR_ANG:"+ String(100) +","+ String(90) + ">"; //TODO: add data once encoder task implemented
