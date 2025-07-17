@@ -21,11 +21,6 @@ void encoderTask(void *pvParameters);
 void serialTask(void *pvParameters);
 void controlTask(void *pvParameters);
 
-// Global variables
-extern std::array<int, N_ENCODERS> motorPositionArray;
-extern std::array<int, N_ENCODERS> currentAngleArray;
-extern std::array<int, N_ENCODERS> desiredAngleArray;
-
 // Shared Types
 enum MessageType {
     PING,
@@ -51,7 +46,7 @@ struct Message {
         int errorCode;      // ERROR
     };
     union {
-        int angleValue;     // DES_ANG, CUR_ANG
+        float angleValue;     // DES_ANG, CUR_ANG
         int positionValue;  // DES_POS, CUR_POS
     };
 };
