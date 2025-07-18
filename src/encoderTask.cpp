@@ -14,13 +14,33 @@ std::array<AS5600, N_ENCODERS> encoderArray;
 std::array<float, N_ENCODERS> encoderPositionArray;
 
 // === EXTERNALS === //
-extern std::array<float, N_ENCODERS> currentAngleArray;
+
+std::array<int, N_ENCODERS> motorPositionArray;
+std::array<int, N_ENCODERS> currentAngleArray;
 
 // === INTERRUPT === //
 
-void IRAM_ATTR sampleEncodersISR() {
-    // TODO: [SAM] Sample encoders here and write to encoderPositionArray
-    encoderPositionArray[0] = encoderPositionArray[0] + 1; //replace this
+// void IRAM_ATTR sampleEncodersISR() {
+//     // TODO: [SAM] Sample encoders here and write to encoderPositionArray
+//     encoderPositionArray[0] = encoderPositionArray[0] + 1; //replace this
+// }
+
+uint16_t readEncoders(int encoderAddr){
+    Wire.beginTransmission(encoderAddr);
+    Wire.write(START_REGISTER);
+    Wire.endTransmission(false);
+
+    uint16_t angle;
+
+    Wire.requestFrom(encoderAddr, 2);
+    if (Wire.available() >= 2){
+        uint8_t angle_high = Wire.read();
+        uint8_t angle_low = Wire.read();
+
+        angle = ((uint8_t)angle_high << 8) | angle_low;
+
+    }
+    return angle;
 }
 
 // === TASK === //
@@ -31,6 +51,12 @@ void encoderTask(void *pvParameters) {
     // Set up encoders
     //TODO: [SAM] Use encoderArray to store 4 initialised as5600 objects
     // Note; when initialising, make sure to use correct AS5600 object (can choose AS5600 or AS5600L)
+
+    Wire.begin();
+    encoderPositionArray[0] = readEncoders(BASE_ENC_ADDR);
+    encoderPositionArray[1] = readEncoders(SHOULDER_ENC_ADDR);
+    encoderPositionArray[2] = readEncoders(ELBOW_ENC_ADDR);
+    encoderPositionArray[3] = readEncoders(WRIST_ENC_ADDR);
 
     /* Make the task execute at a specified frequency */
     const TickType_t xFrequency = configTICK_RATE_HZ / ENCODER_TASK_FREQUENCY;
