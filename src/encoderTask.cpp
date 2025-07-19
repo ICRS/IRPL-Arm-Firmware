@@ -9,7 +9,7 @@
 // Task handles
 TaskHandle_t encoderTaskHandle = nullptr;
 
-std::array<float, N_ENCODERS> encoderPositionArray;
+std::array<float, N_ENCODERS> encoderAngleArray;
 
 // === EXTERNALS === //
 
@@ -17,13 +17,6 @@ std::array<int, N_ENCODERS> motorPositionArray;
 std::array<int, N_ENCODERS> currentAngleArray;
 
 // === INTERRUPT === //
-
-void IRAM_ATTR sampleEncodersISR() {
-    encoderPositionArray[0] = readEncoders(BASE_ENC_ADDR);
-    encoderPositionArray[1] = readEncoders(SHOULDER_ENC_ADDR);
-    encoderPositionArray[2] = readEncoders(ELBOW_ENC_ADDR);
-    encoderPositionArray[3] = readEncoders(WRIST_ENC_ADDR);
-}
 
 uint16_t readEncoders(int encoderAddr){
     Wire.beginTransmission(encoderAddr);
@@ -43,15 +36,32 @@ uint16_t readEncoders(int encoderAddr){
     return angle;
 }
 
+void IRAM_ATTR sampleEncodersISR() {
+    encoderAngleArray[0] = readEncoders(BASE_ENC_ADDR);
+    encoderAngleArray[1] = readEncoders(SHOULDER_ENC_ADDR);
+    encoderAngleArray[2] = readEncoders(ELBOW_ENC_ADDR);
+    encoderAngleArray[3] = readEncoders(WRIST_ENC_ADDR);
+}
+
+// === FUNCTIONS === //
+
+void convertToIKAngles(){
+    std::array<float, N_ENCODERS> offsetArray = {0,0,0,0/*DEFINE THESE ONCE TESTED*/};
+    std::array<float, N_ENCODERS> signArray = {1,1,1,1/*DEFINE THESE ONCE TESTED*/};
+
+    //std::array<int, N_ENCODERS> tempAngleArray = {0,0,0,0};
+
+    for (int i = 0; i < N_ENCODERS; i++){
+        currentAngleArray[i] = (signArray[i]*encoderAngleArray[i]) + offsetArray[i];
+    }
+}
+
 // === TASK === //
 
 void encoderTask(void *pvParameters) {
     (void)pvParameters;
 
     // Set up encoders
-    //TODO: [SAM] Use encoderArray to store 4 initialised as5600 objects
-    // Note; when initialising, make sure to use correct AS5600 object (can choose AS5600 or AS5600L)
-
     Wire.begin();
 
     /* Make the task execute at a specified frequency */
@@ -65,6 +75,8 @@ void encoderTask(void *pvParameters) {
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
         //TODO: Perform conversion from encoderPositions to motorPositions and currentAngles
-        Serial.println(encoderPositionArray[0]); //use for debugging, since can't print from ISR
+        Serial.println(encoderAngleArray[0]); //use for debugging, since can't print from ISR
+    
+        convertToIKAngles();
     }
 }
