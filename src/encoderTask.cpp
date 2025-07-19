@@ -2,15 +2,13 @@
 
 #include "tasks.h"
 #include "config.h"
-
-#include "AS5600.h"
+#include <Wire.h>
 
 // === GLOBAL VARIABLES === //
 
 // Task handles
 TaskHandle_t encoderTaskHandle = nullptr;
 
-std::array<AS5600, N_ENCODERS> encoderArray;
 std::array<float, N_ENCODERS> encoderPositionArray;
 
 // === EXTERNALS === //
@@ -20,10 +18,12 @@ std::array<int, N_ENCODERS> currentAngleArray;
 
 // === INTERRUPT === //
 
-// void IRAM_ATTR sampleEncodersISR() {
-//     // TODO: [SAM] Sample encoders here and write to encoderPositionArray
-//     encoderPositionArray[0] = encoderPositionArray[0] + 1; //replace this
-// }
+void IRAM_ATTR sampleEncodersISR() {
+    encoderPositionArray[0] = readEncoders(BASE_ENC_ADDR);
+    encoderPositionArray[1] = readEncoders(SHOULDER_ENC_ADDR);
+    encoderPositionArray[2] = readEncoders(ELBOW_ENC_ADDR);
+    encoderPositionArray[3] = readEncoders(WRIST_ENC_ADDR);
+}
 
 uint16_t readEncoders(int encoderAddr){
     Wire.beginTransmission(encoderAddr);
@@ -53,10 +53,6 @@ void encoderTask(void *pvParameters) {
     // Note; when initialising, make sure to use correct AS5600 object (can choose AS5600 or AS5600L)
 
     Wire.begin();
-    encoderPositionArray[0] = readEncoders(BASE_ENC_ADDR);
-    encoderPositionArray[1] = readEncoders(SHOULDER_ENC_ADDR);
-    encoderPositionArray[2] = readEncoders(ELBOW_ENC_ADDR);
-    encoderPositionArray[3] = readEncoders(WRIST_ENC_ADDR);
 
     /* Make the task execute at a specified frequency */
     const TickType_t xFrequency = configTICK_RATE_HZ / ENCODER_TASK_FREQUENCY;
