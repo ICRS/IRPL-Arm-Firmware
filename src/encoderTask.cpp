@@ -11,6 +11,9 @@ TaskHandle_t encoderTaskHandle = nullptr;
 
 std::array<float, N_ENCODERS> encoderAngleArray;
 
+std::array<float, N_ENCODERS> offsetArray = {0,0,0,0/*TODO:DEFINE THESE ONCE TESTED*/};
+std::array<float, N_ENCODERS> signArray = {1,1,1,1/*TODO:DEFINE THESE ONCE TESTED*/};
+
 // === EXTERNALS === //
 
 extern std::array<int, N_ENCODERS> currentAngleArray;
@@ -45,9 +48,6 @@ void IRAM_ATTR sampleEncodersISR() {
 // === FUNCTIONS === //
 
 void convertToIKAngles(){
-    std::array<float, N_ENCODERS> offsetArray = {0,0,0,0/*TODO:DEFINE THESE ONCE TESTED*/};
-    std::array<float, N_ENCODERS> signArray = {1,1,1,1/*TODO:DEFINE THESE ONCE TESTED*/};
-
     for (int i = 0; i < N_ENCODERS; i++){
         currentAngleArray[i] = (signArray[i]*encoderAngleArray[i]) + offsetArray[i];
     }
