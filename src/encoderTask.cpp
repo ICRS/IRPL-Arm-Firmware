@@ -13,8 +13,7 @@ std::array<float, N_ENCODERS> encoderAngleArray;
 
 // === EXTERNALS === //
 
-std::array<int, N_ENCODERS> motorPositionArray;
-std::array<int, N_ENCODERS> currentAngleArray;
+extern std::array<int, N_ENCODERS> currentAngleArray;
 
 // === INTERRUPT === //
 
@@ -46,10 +45,8 @@ void IRAM_ATTR sampleEncodersISR() {
 // === FUNCTIONS === //
 
 void convertToIKAngles(){
-    std::array<float, N_ENCODERS> offsetArray = {0,0,0,0/*DEFINE THESE ONCE TESTED*/};
-    std::array<float, N_ENCODERS> signArray = {1,1,1,1/*DEFINE THESE ONCE TESTED*/};
-
-    //std::array<int, N_ENCODERS> tempAngleArray = {0,0,0,0};
+    std::array<float, N_ENCODERS> offsetArray = {0,0,0,0/*TODO:DEFINE THESE ONCE TESTED*/};
+    std::array<float, N_ENCODERS> signArray = {1,1,1,1/*TODO:DEFINE THESE ONCE TESTED*/};
 
     for (int i = 0; i < N_ENCODERS; i++){
         currentAngleArray[i] = (signArray[i]*encoderAngleArray[i]) + offsetArray[i];
@@ -74,7 +71,6 @@ void encoderTask(void *pvParameters) {
     {
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
-        //TODO: Perform conversion from encoderPositions to motorPositions and currentAngles
         Serial.println(encoderAngleArray[0]); //use for debugging, since can't print from ISR
     
         convertToIKAngles();
