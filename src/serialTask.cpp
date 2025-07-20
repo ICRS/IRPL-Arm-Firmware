@@ -97,7 +97,7 @@ void executeCommand(Message message){
         case MessageType::CUR_POS:
             {   
                 float returnVal = motorStatus(message.motorID, (message.type==MessageType::CUR_ANG));
-                if (returnVal == JOINT_ERROR){
+                if (returnVal == float(JOINT_ERROR)){
                     returnString = "<ERROR_CODE:" + String(SerialErrorCode::UNKNOWN_MOTOR) + ">";
                 } 
                 else{
