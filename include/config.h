@@ -16,26 +16,26 @@
 
 // Set all pin numbers for various motors. 
 //TODO: UPDATE FOR NEW ARM BOARD
-#define BASE_STEP_PIN     31
-#define BASE_DIR_PIN      32
-#define BASE_EN_PIN       40
+#define BASE_STEP_PIN     14
+#define BASE_DIR_PIN      27
+#define BASE_EN_PIN       26
 
-#define SHOULDER_STEP_PIN 24
-#define SHOULDER_DIR_PIN  23
-#define SHOULDER_EN_PIN   22
+#define SHOULDER_STEP_PIN 25
+#define SHOULDER_DIR_PIN  33
+#define SHOULDER_EN_PIN   32
 
-#define ELBOW_STEP_PIN    27
-#define ELBOW_DIR_PIN     26
-#define ELBOW_EN_PIN      25
+#define ELBOW_STEP_PIN    4
+#define ELBOW_DIR_PIN     16
+#define ELBOW_EN_PIN      17
 
-#define WRIST_STEP_PIN    30
-#define WRIST_DIR_PIN     29
-#define WRIST_EN_PIN      28
+#define WRIST_STEP_PIN    5
+#define WRIST_DIR_PIN     18
+#define WRIST_EN_PIN      19
 
-#define ROLL_EN_PIN       9
-#define GRASP_PIN         8
-#define IN_1_PIN          4
-#define IN_2_PIN          5
+#define ROLL_EN_PIN       0
+#define GRASP_PIN         12
+#define IN_1_PIN          2
+#define IN_2_PIN          15
 
 // Set all pin numbers for various encoders
 //TODO: UPDATE FOR NEW ARM BOARD
@@ -86,7 +86,7 @@
 #define DEBUG_TASK_PRIORITY 1
 
 // ENCODER Task
-#define ENCODER_TASK_ENABLE true
+#define ENCODER_TASK_ENABLE false
 #define ENCODER_TASK_FREQUENCY 50
 #define ENCODER_TASK_STACK_SIZE 5000
 #define ENCODER_TASK_PRIORITY 4

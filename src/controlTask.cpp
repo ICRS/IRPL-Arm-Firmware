@@ -17,8 +17,8 @@ double Setpoint, Input, Output;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 // Create Servo object
-Servo gripper;
-float gripperSpeed = 0;
+// Servo gripper;
+ float gripperSpeed = 0;
 
 int wristVelocity = 0;
 
@@ -96,9 +96,14 @@ void operateGripper(float normalisedSpeed){
     // Since the servo is continuous, writing an angle of "90" to it will stop it
     // And writing maximum angles (0, 180) to it maximises its speed in either direction
     // http://www.spt-servo.com/Product/5621733416.html
-    float newGripperSpeed = 90 + (85*normalisedSpeed);
+    // float newGripperSpeed = 90 + (85*normalisedSpeed);
+    // gripperSpeed = newGripperSpeed;
+    //gripper.write(newGripperSpeed);
+    //75
+    float newGripperSpeed =127 + (25*normalisedSpeed);
     gripperSpeed = newGripperSpeed;
-    gripper.write(newGripperSpeed);
+    ledcWrite(0,newGripperSpeed);
+
     //TODO: Add a time limit
 }
 
@@ -266,8 +271,12 @@ void initMotors(){
 	ESP32PWM::allocateTimer(1);
 	ESP32PWM::allocateTimer(2);
 	ESP32PWM::allocateTimer(3);
-    gripper.setPeriodHertz(SERVO_FREQUENCY);
-    gripper.attach(GRASP_PIN, SERVO_MINIMUM, SERVO_MAXIMUM); // set up gripper servo on pin 8
+    // gripper.setPeriodHertz(SERVO_FREQUENCY);
+    // gripper.attach(GRASP_PIN, SERVO_MINIMUM, SERVO_MAXIMUM); // set up gripper servo on pin 8
+
+    pinMode(GRASP_PIN,OUTPUT);
+    ledcAttachPin(GRASP_PIN,0);
+    ledcSetup(0,330,8);
 }
 
 void initStepPinArray(){
