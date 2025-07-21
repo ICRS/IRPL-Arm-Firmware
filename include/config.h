@@ -15,7 +15,6 @@
 #define JOINT_ERROR -1.01
 
 // Set all pin numbers for various motors. 
-//TODO: UPDATE FOR NEW ARM BOARD
 #define BASE_STEP_PIN     14
 #define BASE_DIR_PIN      27
 #define BASE_EN_PIN       26
@@ -38,7 +37,6 @@
 #define IN_2_PIN          15
 
 // Set all pin numbers for various encoders
-//TODO: UPDATE FOR NEW ARM BOARD
 #define N_ENCODERS 4
 #define ENC_SCL_PIN 22
 #define ENC_SDA_PIN 21

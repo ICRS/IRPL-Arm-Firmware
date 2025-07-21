@@ -79,7 +79,7 @@ float motorStatus(int ID, bool isAngle){
     else if (ID == ROLL_ID){
         return float(wristVelocity);
     }
-    else return JOINT_ERROR; //TODO: This is a terrible solution to throwing an error, need to change
+    else return JOINT_ERROR; //TODO: This is a terrible solution to throwing an error, fix by passing in a pointer instead
 }
 
 // === FUNCTIONS === //
