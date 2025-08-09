@@ -11,16 +11,15 @@ TaskHandle_t encoderTaskHandle = nullptr;
 
 std::array<float, N_ENCODERS> encoderAngleArray;
 
-std::array<float, N_ENCODERS> offsetArray = {0,0,0,0/*TODO:DEFINE THESE ONCE TESTED*/};
+std::array<float, N_ENCODERS> offsetArray = {414,0,267,0/*TODO:DEFINE THESE ONCE TESTED*/};
 std::array<float, N_ENCODERS> signArray = {1,1,1,1/*TODO:DEFINE THESE ONCE TESTED*/};
 
 // === EXTERNALS === //
 
 extern std::array<int, N_ENCODERS> currentAngleArray;
+volatile bool encoder_read = false;
 
-// === INTERRUPT === //
-
-uint16_t readEncoders(int encoderAddr){
+uint16_t encode(int encoderAddr){
     Wire.beginTransmission(encoderAddr);
     Wire.write(START_REGISTER);
     Wire.endTransmission(false);
@@ -35,14 +34,28 @@ uint16_t readEncoders(int encoderAddr){
         angle = ((uint8_t)angle_high << 8) | angle_low;
 
     }
+    angle = angle & 0x0FFF; // mask to 12 bits
+    angle = (angle * 360.0) / 4096.0;
     return angle;
 }
 
+
+// === INTERRUPT === //
+
+void readEncoders(){
+    if (encoder_read == true){
+        encoder_read = false;
+        encoderAngleArray[0] = 0;
+        encoderAngleArray[1] = encode(SHOULDER_ENC_ADDR);
+        encoderAngleArray[2] = encode(ELBOW_ENC_ADDR);
+        encoderAngleArray[3] = encode(WRIST_ENC_ADDR);
+    }
+    
+}
+
+
 void IRAM_ATTR sampleEncodersISR() {
-    encoderAngleArray[0] = readEncoders(BASE_ENC_ADDR);
-    encoderAngleArray[1] = readEncoders(SHOULDER_ENC_ADDR);
-    encoderAngleArray[2] = readEncoders(ELBOW_ENC_ADDR);
-    encoderAngleArray[3] = readEncoders(WRIST_ENC_ADDR);
+    encoder_read = true;
 }
 
 // === FUNCTIONS === //
@@ -50,6 +63,7 @@ void IRAM_ATTR sampleEncodersISR() {
 void convertToIKAngles(){
     for (int i = 0; i < N_ENCODERS; i++){
         currentAngleArray[i] = (signArray[i]*encoderAngleArray[i]) + offsetArray[i];
+        Serial.println(currentAngleArray[i]);
     }
 }
 
@@ -72,7 +86,7 @@ void encoderTask(void *pvParameters) {
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
         Serial.println(encoderAngleArray[0]); //use for debugging, since can't print from ISR
-    
+        readEncoders();
         convertToIKAngles();
     }
 }

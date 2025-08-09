@@ -16,21 +16,25 @@
 
 // Set all pin numbers for various motors. 
 //TODO: UPDATE FOR NEW ARM BOARD
-#define BASE_STEP_PIN     14
-#define BASE_DIR_PIN      27
-#define BASE_EN_PIN       26
+#define BASE_STEP_PIN     25
+#define BASE_DIR_PIN      33
+#define BASE_EN_PIN       32
 
-#define SHOULDER_STEP_PIN 25
-#define SHOULDER_DIR_PIN  33
-#define SHOULDER_EN_PIN   32
+#define SHOULDER_STEP_PIN 14
+#define SHOULDER_DIR_PIN  27
+#define SHOULDER_EN_PIN   26
 
-#define ELBOW_STEP_PIN    4
-#define ELBOW_DIR_PIN     16
-#define ELBOW_EN_PIN      17
+#define ELBOW_STEP_PIN    5
+#define ELBOW_DIR_PIN     18
+#define ELBOW_EN_PIN      19
 
-#define WRIST_STEP_PIN    5
-#define WRIST_DIR_PIN     18
-#define WRIST_EN_PIN      19
+// #define WRIST_STEP_PIN    4
+// #define WRIST_DIR_PIN     16
+// #define WRIST_EN_PIN      17
+
+#define WRIST_STEP_PIN    25
+#define WRIST_DIR_PIN     33
+#define WRIST_EN_PIN      32
 
 #define ROLL_EN_PIN       0
 #define GRASP_PIN         12
@@ -44,9 +48,9 @@
 #define ENC_SDA_PIN 21
 
 #define BASE_ENC_ADDR 0x20
-#define SHOULDER_ENC_ADDR 0x21
-#define ELBOW_ENC_ADDR 0x22
-#define WRIST_ENC_ADDR 0x23
+#define SHOULDER_ENC_ADDR 0x11
+#define ELBOW_ENC_ADDR 0x12
+#define WRIST_ENC_ADDR 0x13
 #define START_REGISTER 0X10
 
 // Period of square wave to steppers.
@@ -86,7 +90,7 @@
 #define DEBUG_TASK_PRIORITY 1
 
 // ENCODER Task
-#define ENCODER_TASK_ENABLE false
+#define ENCODER_TASK_ENABLE true
 #define ENCODER_TASK_FREQUENCY 50
 #define ENCODER_TASK_STACK_SIZE 5000
 #define ENCODER_TASK_PRIORITY 4
@@ -98,7 +102,7 @@
 #define SERIAL_TASK_PRIORITY 2
 
 // CONTROL Task
-#define CONTROL_TASK_ENABLE true
+#define CONTROL_TASK_ENABLE false
 #define CONTROL_TASK_FREQUENCY 10
 #define CONTROL_TASK_STACK_SIZE 5000
 #define CONTROL_TASK_PRIORITY 3
