@@ -9,8 +9,8 @@
 // === GLOBAL VARIABLES === //
 
 // Global variables
-std::array<float, N_ENCODERS> desiredAngleArray = {0, 50, 50, 20};
-std::array<float, N_ENCODERS> currentAngleArray= {0, 50, 50, 20};
+std::array<float, N_ENCODERS> desiredAngleArray;
+std::array<float, N_ENCODERS> currentAngleArray;
 
 // Hardware timers
 hw_timer_t *encoderTimer = NULL;

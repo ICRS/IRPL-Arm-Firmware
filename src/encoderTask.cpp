@@ -11,12 +11,13 @@ TaskHandle_t encoderTaskHandle = nullptr;
 
 std::array<float, N_ENCODERS> encoderAngleArray;
 
-std::array<float, N_ENCODERS> offsetArray = {414,0,267,0/*TODO:DEFINE THESE ONCE TESTED*/};
-std::array<float, N_ENCODERS> signArray = {1,1,1,1/*TODO:DEFINE THESE ONCE TESTED*/};
+std::array<float, N_ENCODERS> offsetArray = {0,414,-90,31/*TODO:DEFINE THESE ONCE TESTED*/};
+std::array<float, N_ENCODERS> signArray = {1,1,-1,1/*TODO:DEFINE THESE ONCE TESTED*/};
 
 // === EXTERNALS === //
 
 extern std::array<int, N_ENCODERS> currentAngleArray;
+extern std::array<int, N_ENCODERS> desiredAngleArray;
 volatile bool encoder_read = false;
 
 uint16_t encode(int encoderAddr){
@@ -62,7 +63,12 @@ void IRAM_ATTR sampleEncodersISR() {
 
 void convertToIKAngles(){
     for (int i = 0; i < N_ENCODERS; i++){
-        currentAngleArray[i] = (signArray[i]*encoderAngleArray[i]) + offsetArray[i];
+        if (signArray[i] == -1){
+            encoderAngleArray[i] = 360 - encoderAngleArray[i];
+        }
+
+        double adjusted = fmod(encoderAngleArray[i] - offsetArray[i],360);
+        currentAngleArray[i] = adjusted;
         Serial.println(currentAngleArray[i]);
     }
 }
@@ -79,13 +85,23 @@ void encoderTask(void *pvParameters) {
     const TickType_t xFrequency = configTICK_RATE_HZ / ENCODER_TASK_FREQUENCY;
     TickType_t xLastWakeTime = xTaskGetTickCount();
 
-    Serial.println("Set up encoderTask");
+    encoder_read = true;
+    readEncoders();
+    convertToIKAngles();
+    desiredAngleArray = currentAngleArray;
+    
+    Serial.println("Desired start");
+    for (int i=0; i<N_ENCODERS; i++){
+        Serial.println(desiredAngleArray[i]);
+    }
+    
 
     for (;;)
     {
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
-        Serial.println(encoderAngleArray[0]); //use for debugging, since can't print from ISR
+        //Serial.println(encoderAngleArray[0]); //use for debugging, since can't print from ISR
+        Serial.println("Current");
         readEncoders();
         convertToIKAngles();
     }

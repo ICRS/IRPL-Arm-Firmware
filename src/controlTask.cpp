@@ -198,9 +198,9 @@ void updateSteps()
     // Shoulder and base only change angle when their motors are told to.
     stepsNum[SHOULDER_ID] = abs(newAngleShoulder - currentAngleShoulder) * GEAR_RATIO_SHOULDER * static_cast<float>(DEFAULT_STEPS) / 360.0;
     stepsNum[BASE_ID] = abs(newAngleBase - currentAngleBase) * GEAR_RATIO_BASE * static_cast<float>(DEFAULT_STEPS) / 360.0;
-    Serial.println(newAngleBase);
-    Serial.println(currentAngleBase);
-    Serial.println(stepsNum[BASE_ID]);
+    // Serial.println(newAngleBase);
+    // Serial.println(currentAngleBase);
+    // Serial.println(stepsNum[BASE_ID]);
     // Elbow changes angle when its motor moves, but also when the elbow motor moves due to the physical implementation of power transmission.
     stepsNum[ELBOW_ID] = abs(newAngleElbow - currentAngleElbow + newAngleShoulder - currentAngleShoulder) * GEAR_RATIO_ELBOW * static_cast<float>(DEFAULT_STEPS) / 360.0;
     // Wrist angle has been dealt with above.
@@ -212,7 +212,7 @@ void updateSteps()
     stepsDir[WRIST_ID] = (angleChangeWristMotor > 0 ? LOW : HIGH);
     stepsDir[BASE_ID] = (newAngleBase > currentAngleBase ? HIGH : LOW);
     // remove
-    currentAngleArray = newAngleArray;
+    //currentAngleArray = newAngleArray;
 }
 
 // Update current angles and wrist motor angle
@@ -244,6 +244,10 @@ void updateControl()
     //      myPID.Compute();
     //      newAngleArray[i] = round(Output);
     //  }
+    Serial.println("Desired");
+    for (int i=0; i<N_ENCODERS; i++){
+        Serial.println(desiredAngleArray[i]);
+    }
     newAngleArray = desiredAngleArray;
     updateAngles(newAngleArray);
     updateSteps();
@@ -268,7 +272,7 @@ void writeToMotors()
         delayMicroseconds(10);
         digitalWrite(BASE_STEP_PIN, LOW);
         delayMicroseconds(10);
-        Serial.print("BASE: "); Serial.println(stepsNum[0]);
+        //Serial.print("BASE: "); Serial.println(stepsNum[0]);
         stepsNum[0]--;
     }
 
@@ -279,7 +283,7 @@ void writeToMotors()
         delayMicroseconds(10);
         digitalWrite(SHOULDER_STEP_PIN, LOW);
         delayMicroseconds(10);
-        Serial.print("SHOULDER: "); Serial.println(stepsNum[1]);
+        //Serial.print("SHOULDER: "); Serial.println(stepsNum[1]);
         stepsNum[1]--;
     }
 
@@ -290,7 +294,7 @@ void writeToMotors()
         delayMicroseconds(10);
         digitalWrite(ELBOW_STEP_PIN, LOW);
         delayMicroseconds(10);
-        Serial.print("ELBOW: "); Serial.println(stepsNum[2]);
+        //Serial.print("ELBOW: "); Serial.println(stepsNum[2]);
         stepsNum[2]--;
     }
 
@@ -301,7 +305,7 @@ void writeToMotors()
         delayMicroseconds(10);
         digitalWrite(WRIST_STEP_PIN, LOW);
         delayMicroseconds(10);
-        Serial.print("WRIST: "); Serial.println(stepsNum[3]);
+        //Serial.print("WRIST: "); Serial.println(stepsNum[3]);
         stepsNum[3]--;
     }
         if (stepsNum[0] == 0 && stepsNum[1] == 0 && stepsNum[2] == 0 && stepsNum[3] == 0){
