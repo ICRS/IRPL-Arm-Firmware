@@ -66,7 +66,7 @@ void convertToIKAngles(){
         if (signArray[i] == -1){
             encoderAngleArray[i] = 360 - encoderAngleArray[i];
         }
-
+        //Attempts to ensure angle values loop round correctly (untested)
         double adjusted = fmod(encoderAngleArray[i] - offsetArray[i],360);
         currentAngleArray[i] = adjusted;
         Serial.println(currentAngleArray[i]);
@@ -86,6 +86,8 @@ void encoderTask(void *pvParameters) {
     TickType_t xLastWakeTime = xTaskGetTickCount();
 
     encoder_read = true;
+    //attempt to ensure desiredAngle = currentAngle on startUp (Need to test again)
+    desiredAngleArray = {0, 0, 0, 0};
     readEncoders();
     convertToIKAngles();
     desiredAngleArray = currentAngleArray;

@@ -211,8 +211,7 @@ void updateSteps()
     stepsDir[ELBOW_ID] = (newAngleElbow + newAngleShoulder > currentAngleElbow + currentAngleShoulder ? HIGH : LOW);
     stepsDir[WRIST_ID] = (angleChangeWristMotor > 0 ? LOW : HIGH);
     stepsDir[BASE_ID] = (newAngleBase > currentAngleBase ? HIGH : LOW);
-    // remove
-    //currentAngleArray = newAngleArray;
+
 }
 
 // Update current angles and wrist motor angle
