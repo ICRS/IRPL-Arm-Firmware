@@ -15,7 +15,7 @@
 #define JOINT_ERROR -1.01
 
 // Set all pin numbers for various motors. 
-//TODO: UPDATE FOR NEW ARM BOARD
+
 #define BASE_STEP_PIN     25
 #define BASE_DIR_PIN      33
 #define BASE_EN_PIN       32
@@ -28,13 +28,10 @@
 #define ELBOW_DIR_PIN     18
 #define ELBOW_EN_PIN      19
 
-// #define WRIST_STEP_PIN    4
-// #define WRIST_DIR_PIN     16
-// #define WRIST_EN_PIN      17
+#define WRIST_STEP_PIN    4
+#define WRIST_DIR_PIN     16
+#define WRIST_EN_PIN      17
 
-#define WRIST_STEP_PIN    25
-#define WRIST_DIR_PIN     33
-#define WRIST_EN_PIN      32
 
 #define ROLL_EN_PIN       0
 #define GRASP_PIN         12
