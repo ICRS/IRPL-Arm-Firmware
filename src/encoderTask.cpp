@@ -16,17 +16,17 @@ std::array<float, N_ENCODERS> signArray = {1,1,-1,1/*TODO:DEFINE THESE ONCE TEST
 
 // === EXTERNALS === //
 
-extern std::array<int, N_ENCODERS> currentAngleArray;
-extern std::array<int, N_ENCODERS> desiredAngleArray;
+extern std::array<float, N_ENCODERS> currentAngleArray;
+extern std::array<float, N_ENCODERS> desiredAngleArray;
 volatile bool encoder_read = false;
 
-uint16_t encode(int encoderAddr){
+float encode(int encoderAddr){
     Wire.beginTransmission(encoderAddr);
     Wire.write(START_REGISTER);
     Wire.endTransmission(false);
 
     uint16_t angle;
-
+    float angle_float;
     Wire.requestFrom(encoderAddr, 2);
     if (Wire.available() >= 2){
         uint8_t angle_high = Wire.read();
@@ -36,8 +36,8 @@ uint16_t encode(int encoderAddr){
 
     }
     angle = angle & 0x0FFF; // mask to 12 bits
-    angle = (angle * 360.0) / 4096.0;
-    return angle;
+    angle_float = (angle * 360.0) / 4095.0;
+    return angle_float;
 }
 
 
@@ -69,7 +69,7 @@ void convertToIKAngles(){
         //Attempts to ensure angle values loop round correctly (untested)
         double adjusted = fmod(encoderAngleArray[i] - offsetArray[i],360);
         currentAngleArray[i] = adjusted;
-        Serial.println(currentAngleArray[i]);
+        Serial.printf(">%d:%.2f\n",i,currentAngleArray[i]);
     }
 }
 
@@ -102,8 +102,6 @@ void encoderTask(void *pvParameters) {
     {
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
-        //Serial.println(encoderAngleArray[0]); //use for debugging, since can't print from ISR
-        Serial.println("Current");
         readEncoders();
         convertToIKAngles();
     }
