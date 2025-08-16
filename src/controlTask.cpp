@@ -9,10 +9,10 @@
 #define ANGLE_THRESHOLD 5.0
 
 // === GLOBAL VARIABLES === //
-Stepper shoulderMotor(SHOULDER_STEP_PIN,SHOULDER_DIR_PIN);
-Stepper baseMotor(BASE_STEP_PIN,BASE_DIR_PIN);
-Stepper elbowMotor(ELBOW_STEP_PIN,ELBOW_DIR_PIN);
-Stepper wristMotor(WRIST_STEP_PIN,WRIST_DIR_PIN);
+Stepper shoulderMotor(SHOULDER_STEP_PIN,SHOULDER_DIR_PIN, 0);
+Stepper baseMotor(BASE_STEP_PIN,BASE_DIR_PIN, 1);
+Stepper elbowMotor(ELBOW_STEP_PIN,ELBOW_DIR_PIN, 1);
+Stepper wristMotor(WRIST_STEP_PIN,WRIST_DIR_PIN, 0);
 
 // Task handles
 TaskHandle_t controlTaskHandle = nullptr;
