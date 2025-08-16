@@ -158,10 +158,12 @@ float r2d(float rad)
 
 void updateMotors(){
     float jointError[4];
+    #ifdef TELEMETRY
     for(int i = 0; i<4; i++){
             jointError[i] = desiredAngleArray[i]-currentAngleArray[i];
             Serial.printf(">error_%d:%.2f\n",i,jointError[i]);  
         }
+    #endif
     
     baseMotor.setSpeed(jointError[0]);
     shoulderMotor.setSpeed(jointError[1]);
@@ -186,7 +188,6 @@ void controlTask(void *pvParameters)
     for (;;)
     {
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
-        // WRITE OUTPUTS TO MOTORS
         updateMotors();
     }
 }
