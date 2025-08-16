@@ -11,7 +11,7 @@ private:
     bool pos_dir;
 public:
     Stepper(uint8_t step_pin,uint8_t dir_pin, uint8_t flip);
-    
+    uint32_t set_frequency;
     void setSpeed(float target);
 };
 

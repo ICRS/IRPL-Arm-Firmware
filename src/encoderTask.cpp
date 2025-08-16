@@ -11,9 +11,9 @@ TaskHandle_t encoderTaskHandle = nullptr;
 
 std::array<float, N_ENCODERS> encoderAngleArray;
 
-std::array<float, N_ENCODERS> offsetArray = {0, 74, -90, 31 /*TODO:DEFINE THESE ONCE TESTED*/};
+std::array<float, N_ENCODERS> offsetArray = {0, 323, 277, 0 /*TODO:DEFINE THESE ONCE TESTED*/};
 std::array<float, N_ENCODERS> signArray = {1, 1, -1, 1 /*TODO:DEFINE THESE ONCE TESTED*/};
-std::array<float, N_ENCODERS> scaleArray = {1, 0.5, 1, 1 /*TODO:DEFINE THESE ONCE TESTED*/};
+std::array<float, N_ENCODERS> scaleArray = {1, 0.25, 1, 1 /*TODO:DEFINE THESE ONCE TESTED*/};
 
 // === EXTERNALS === //
 
@@ -88,6 +88,10 @@ void convertToIKAngles()
 
         // Step 4: Apply gear ratio / scale
         float jointAngle = delta * scaleArray[i]; // scale = 0.5 for 2:1
+
+        if (i == SHOULDER_ID && jointAngle <45){
+            jointAngle += 90;
+        }
 
         // Step 5: Clamp to joint limits
         if (jointAngle < 0)

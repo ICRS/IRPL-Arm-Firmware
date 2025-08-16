@@ -29,9 +29,11 @@ void Stepper::setSpeed(float target)
 {   
     if (target > 0) {
         digitalWrite(dir_pin, pos_dir);
+        Serial.printf(">wrist_dir:%d\n",pos_dir);
     }
     else if (target < 0) {
         digitalWrite(dir_pin, !pos_dir);
+        Serial.printf(">wrist_dir:%d\n",!pos_dir);
         target = -target;   
     }
     else {
@@ -39,8 +41,9 @@ void Stepper::setSpeed(float target)
         return;
     }
     if (target > offset || target <-offset){
-        float scaled_freq = mapf(target,0,180.0,0,MAX_FREQ);
-        ledcWriteTone(step_pin, scaled_freq);
+        float scaled_freq = mapf(target,0.0,180.0,0.0,MAX_FREQ);
+        this->set_frequency = static_cast<uint32_t>(scaled_freq);
+        ledcWriteTone(step_pin, set_frequency);
     }else {
         ledcWriteTone(step_pin, 0);
         return;
