@@ -167,7 +167,7 @@ void updateMotors(){
 
     baseMotor.setSpeed(jointError[0]);
     shoulderMotor.setSpeed(jointError[1]);
-    elbowMotor.setSpeed(-0.5*jointError[2]);
+    elbowMotor.setSpeed(0.5*jointError[2]);
     wristMotor.setSpeed(0.5*jointError[3]);
     Serial.printf(">elbow_freq:%d\n",elbowMotor.set_frequency);
 }
