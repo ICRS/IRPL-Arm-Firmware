@@ -14,7 +14,7 @@ std::array<float, N_ENCODERS> prevAngleArray;
 std::array<float, N_ENCODERS> accumulatedAngleArray;
 
 std::array<float, N_ENCODERS> signArray = {1, 1, -1, -1};
-std::array<float, N_ENCODERS> offsetArray = {0, -65, 85, -277};
+std::array<float, N_ENCODERS> offsetArray = {0, -185, -275, -277};
 std::array<float, N_ENCODERS> scaleArray = {1, 0.333, 1, 1};
 std::array<float, N_ENCODERS> lowerLimitArray = {-75, -180, -90, -90};
 std::array<float, N_ENCODERS> upperLimitArray = {75, 0, 90, 90};
@@ -129,16 +129,16 @@ void encoderTask(void *pvParameters)
     const TickType_t xFrequency = configTICK_RATE_HZ / ENCODER_TASK_FREQUENCY;
     TickType_t xLastWakeTime = xTaskGetTickCount();
 
+    // Initial encoder read
+    encoder_read = true;
     readEncoders();
-    convertToIKAngles();
-    // Set initial absolute angles
+    // Set initial absolute angles and populate currentAngleArray
     accumulatedAngleArray = currentAngleArray;
     prevAngleArray = accumulatedAngleArray;
+    convertToIKAngles();
     // attempt to ensure desiredAngle = currentAngle on startUp (Need to test again)
     desiredAngleArray = {0, 0, 0, 0};
     desiredAngleArray = currentAngleArray;
-    encoder_read = true;
-    
 
     Serial.println("Desired start");
     for (int i = 0; i < N_ENCODERS; i++)
