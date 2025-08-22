@@ -11,7 +11,7 @@ TaskHandle_t encoderTaskHandle = nullptr;
 
 std::array<float, N_ENCODERS> encoderAngleArray;
 
-std::array<float, N_ENCODERS> offsetArray = {0, 323, 277, 0 /*TODO:DEFINE THESE ONCE TESTED*/};
+std::array<float, N_ENCODERS> offsetArray = {0, 341, 357, 0 /*TODO:DEFINE THESE ONCE TESTED*/};
 std::array<float, N_ENCODERS> signArray = {1, 1, -1, 1 /*TODO:DEFINE THESE ONCE TESTED*/};
 std::array<float, N_ENCODERS> scaleArray = {1, 0.25, 1, 1 /*TODO:DEFINE THESE ONCE TESTED*/};
 

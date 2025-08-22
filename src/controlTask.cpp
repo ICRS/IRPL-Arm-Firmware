@@ -159,7 +159,7 @@ float r2d(float rad)
 void updateMotors(){
     float jointError[4];
     #ifdef TELEMETRY
-    for(int i = 1; i<4; i++){
+    for(int i = 0; i<4; i++){
             jointError[i] = desiredAngleArray[i]-currentAngleArray[i];
             Serial.printf(">error_%d:%.2f\n",i,jointError[i]);  
         }
@@ -167,8 +167,8 @@ void updateMotors(){
 
     baseMotor.setSpeed(jointError[0]);
     shoulderMotor.setSpeed(jointError[1]);
-    elbowMotor.setSpeed(0.5*jointError[2]);
-    //wristMotor.setSpeed(0.5*jointError[3]);
+    elbowMotor.setSpeed(-0.5*jointError[2]);
+    wristMotor.setSpeed(0.5*jointError[3]);
     Serial.printf(">elbow_freq:%d\n",elbowMotor.set_frequency);
 }
 
