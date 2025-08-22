@@ -29,11 +29,9 @@ void Stepper::setSpeed(float target)
 {   
     if (target > 0) {
         digitalWrite(dir_pin, pos_dir);
-        Serial.printf(">wrist_dir:%d\n",pos_dir);
     }
     else if (target < 0) {
         digitalWrite(dir_pin, !pos_dir);
-        Serial.printf(">wrist_dir:%d\n",!pos_dir);
         target = -target;   
     }
     else {
