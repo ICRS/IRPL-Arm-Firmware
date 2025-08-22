@@ -10,10 +10,14 @@
 TaskHandle_t encoderTaskHandle = nullptr;
 
 std::array<float, N_ENCODERS> encoderAngleArray;
+std::array<float, N_ENCODERS> prevAngleArray;
+std::array<float, N_ENCODERS> accumulatedAngleArray;
 
-std::array<float, N_ENCODERS> offsetArray = {0, 341, 357, 0 /*TODO:DEFINE THESE ONCE TESTED*/};
-std::array<float, N_ENCODERS> signArray = {1, 1, -1, 1 /*TODO:DEFINE THESE ONCE TESTED*/};
-std::array<float, N_ENCODERS> scaleArray = {1, 0.25, 1, 1 /*TODO:DEFINE THESE ONCE TESTED*/};
+std::array<float, N_ENCODERS> signArray = {1, 1, -1, -1};
+std::array<float, N_ENCODERS> offsetArray = {0, -65, 85, -277};
+std::array<float, N_ENCODERS> scaleArray = {1, 0.333, 1, 1};
+std::array<float, N_ENCODERS> lowerLimitArray = {-75, -180, -90, -90};
+std::array<float, N_ENCODERS> upperLimitArray = {75, 0, 90, 90};
 
 // === EXTERNALS === //
 
@@ -69,37 +73,38 @@ void convertToIKAngles()
 {
     for (int i = 0; i < N_ENCODERS; i++)
     {
-        // Step 1: Wrap encoder angle
-        float angle = fmod(encoderAngleArray[i], 360.0f);
-        if (angle < 0)
-            angle += 360.0f;
+        // Step 1: Use previous raw angles to account for discontinuity
+        float angle = encoderAngleArray[i];
+        float angleChange = angle - prevAngleArray[i];
+        if (abs(angleChange) > 340){
+            if (angleChange > 0){ // go from prev:5 to angle:355, -10 degrees in reality, angleChange = 350
+                angleChange = angleChange - 360;
+            }
+            else{ // go from prev:355 to angle:5, +10 degrees in reality, angleChange = -350
+                angleChange = angleChange + 360;
+            }
+        }
+        prevAngleArray[i] = angle; // set previous raw angle
+        accumulatedAngleArray[i] = accumulatedAngleArray[i] + angleChange; // accumulate
+        angle = accumulatedAngleArray[i]; // set as accumulated angle
 
-        // Step 2: Apply sign
+        // Step 2: Apply sign; -1 is to reverse the sense
         if (signArray[i] == -1)
             angle = 360.0f - angle;
 
-        // Step 3: Apply offset
-        float delta = angle - offsetArray[i] / scaleArray[i];
+        // Step 3: Apply gear ratio / scale
+        angle = angle * scaleArray[i]; // scale = 0.5 for 2:1
 
-        // Optional: wrap delta to [0,360)
-        delta = fmod(delta, 360.0f);
-        if (delta < 0)
-            delta += 360.0f;
-
-        // Step 4: Apply gear ratio / scale
-        float jointAngle = delta * scaleArray[i]; // scale = 0.5 for 2:1
-
-        if (i == SHOULDER_ID && jointAngle <45){
-            jointAngle += 90;
-        }
+        // Step 4: Apply offset
+        angle = angle + offsetArray[i];
 
         // Step 5: Clamp to joint limits
-        if (jointAngle < 0)
-            jointAngle = 0;
-        if (jointAngle > 180)
-            jointAngle = 180;
+        // if (angle < lowerLimitArray[i])
+        //     angle = lowerLimitArray[i];
+        // if (angle > upperLimitArray[i])
+        //     angle = upperLimitArray[i];
 
-        currentAngleArray[i] = jointAngle;
+        currentAngleArray[i] = angle;
         #ifdef TELEMETRY
         Serial.printf(">%d:%.2f\n", i, currentAngleArray[i]);
         #endif
@@ -124,12 +129,16 @@ void encoderTask(void *pvParameters)
     const TickType_t xFrequency = configTICK_RATE_HZ / ENCODER_TASK_FREQUENCY;
     TickType_t xLastWakeTime = xTaskGetTickCount();
 
-    encoder_read = true;
-    // attempt to ensure desiredAngle = currentAngle on startUp (Need to test again)
-    desiredAngleArray = {0, 0, 0, 0};
     readEncoders();
     convertToIKAngles();
+    // Set initial absolute angles
+    accumulatedAngleArray = currentAngleArray;
+    prevAngleArray = accumulatedAngleArray;
+    // attempt to ensure desiredAngle = currentAngle on startUp (Need to test again)
+    desiredAngleArray = {0, 0, 0, 0};
     desiredAngleArray = currentAngleArray;
+    encoder_read = true;
+    
 
     Serial.println("Desired start");
     for (int i = 0; i < N_ENCODERS; i++)
