@@ -6,6 +6,7 @@
 #include <Arduino.h>
 #include <freertos/FreeRTOS.h>
 #include "config.h"
+#include "esp_task_wdt.h"
 
 // === EXTERNALS === //
 
