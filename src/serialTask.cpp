@@ -83,7 +83,7 @@ void executeCommand(Message message){
     String returnString = "";
     switch (message.type){
         case MessageType::PING:
-            returnString = "<PONG:"+ String(message.pingValue) + ">";
+            returnString = "<PONG:50>"; /* 50 is the arm device ID */
             break;
         case MessageType::DES_VAL:
             if (motorCommand(message.motorID, message.motorValue) == -1){
