@@ -14,7 +14,7 @@ std::array<float, N_ENCODERS> prevAngleArray;
 std::array<float, N_ENCODERS> accumulatedAngleArray;
 
 std::array<float, N_ENCODERS> signArray = {1, 1, -1, -1};
-std::array<float, N_ENCODERS> offsetArray = {0, -95, 85, -277};
+std::array<float, N_ENCODERS> offsetArray = {0, -215, 85, -277};
 std::array<float, N_ENCODERS> scaleArray = {1, 0.333, 1, 1};
 std::array<float, N_ENCODERS> lowerLimitArray = {-75, -180, -90, -90};
 std::array<float, N_ENCODERS> upperLimitArray = {75, 0, 90, 90};
