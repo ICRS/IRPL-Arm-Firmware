@@ -46,6 +46,26 @@ float encode(int encoderAddr)
     return angle_float;
 }
 
+
+uint16_t read_ph_sensor(int addr){
+    Wire.beginTransmission(addr);
+    Wire.write(PH_START_REGISTER);
+    Wire.endTransmission(false);
+
+    uint16_t adc_reading;
+
+    Wire.requestFrom(addr, 2);
+    if (Wire.available() >= 2){
+        uint8_t adc_reading_high = Wire.read();
+        uint8_t adc_reading_low = Wire.read();
+
+        adc_reading = ((uint8_t)adc_reading_high << 8) | adc_reading_low;
+
+    }
+    return adc_reading;
+}
+
+
 // === INTERRUPT === //
 
 void readEncoders()
@@ -155,5 +175,8 @@ void encoderTask(void *pvParameters)
         #ifndef TELEMETRY
         printAngles();
         #endif
+
+        /* Read the 16-bit ADC output of the pH sensor. This corresponds to a voltage between 0V and 3.3V */
+        uint16_t ph_adc_reading = read_ph_sensor(WRIST_ENC_ADDR);
     }
 }

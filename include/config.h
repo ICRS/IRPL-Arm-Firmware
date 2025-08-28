@@ -49,6 +49,8 @@
 #define WRIST_ENC_ADDR 0x13
 #define START_REGISTER 0X10
 
+#define PH_START_REGISTER 0X20
+
 // Period of square wave to steppers.
 #define STEPPER_PERIOD 500
 #define DEFAULT_STEPS 400
