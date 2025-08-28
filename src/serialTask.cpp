@@ -15,6 +15,7 @@ std::queue<Message> incomingMessages;
 // === EXTERNALS === //
 
 extern std::array<float, N_ENCODERS> desiredAngleArray;
+extern volatile uint16_t ph_adc_reading;
 
 // === FUNCTIONS === //
 
@@ -71,6 +72,9 @@ Message parseMessage(String input){
         output.type = MessageType::CUR_POS;
         output.motorID = value1.toInt();
     }
+    else if (key == "PH_REQUEST"){
+        output.type = MessageType::PH_PROBE;
+    }
     else{
         output.type = MessageType::ERROR;
         output.errorCode = SerialErrorCode::UNKNOWN_KEY;
@@ -108,6 +112,9 @@ void executeCommand(Message message){
             } //DO NOT REMOVE THESE BRACKETS OR THIS SWITCH CASE WILL BREAK
         case MessageType::ERROR:
             returnString = "<ERROR_CODE:" + String(message.errorCode) + ">";
+            break;
+        case MessageType::PH_PROBE:
+            returnString = "<PH_PROBE:" + String(ph_adc_reading) + ">";
             break;
         default:
             returnString = "<ERROR_CODE:" + String(SerialErrorCode::UNKNOWN_EXECUTION) + ">";

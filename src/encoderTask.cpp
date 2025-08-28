@@ -24,6 +24,8 @@ std::array<float, N_ENCODERS> upperLimitArray = {75, 0, 90, 90};
 extern std::array<float, N_ENCODERS> currentAngleArray;
 extern std::array<float, N_ENCODERS> desiredAngleArray;
 volatile bool encoder_read = false;
+volatile uint16_t ph_adc_reading;
+
 
 float encode(int encoderAddr)
 {
@@ -177,6 +179,6 @@ void encoderTask(void *pvParameters)
         #endif
 
         /* Read the 16-bit ADC output of the pH sensor. This corresponds to a voltage between 0V and 3.3V */
-        uint16_t ph_adc_reading = read_ph_sensor(WRIST_ENC_ADDR);
+        ph_adc_reading = read_ph_sensor(WRIST_ENC_ADDR);
     }
 }

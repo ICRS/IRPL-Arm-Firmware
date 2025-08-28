@@ -28,6 +28,7 @@ enum MessageType {
     DES_VAL,
     CUR_ANG,
     CUR_POS,
+    PH_PROBE,
     ERROR,
 };
 
