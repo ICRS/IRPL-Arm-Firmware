@@ -167,7 +167,7 @@ void updateMotors(){
     baseMotor.setSpeed(jointError[0]);
     shoulderMotor.setSpeed(jointError[1]);
     elbowMotor.setSpeed(jointError[2]);
-    wristMotor.setSpeed(-1*jointError[3]);
+    wristMotor.setSpeed(-1.7*jointError[3]);
 }
 
 // === TASK === //
