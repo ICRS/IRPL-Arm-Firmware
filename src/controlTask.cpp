@@ -108,28 +108,32 @@ void operateGripper(float normalisedSpeed)
 }
 
 // The wrist "roll" (rotation around its axis) is controlled by a brushed DC motor.
-// Time is the time in ms to rotate by. Start with a small time and see how it goes. 500 is a good starting point.
+// Speed-based.
 void rollWrist(int speed)
 {
+    Serial.print("Rotating wrist with speed: ");
+    Serial.println(speed);
     // Set inputs of H-Bridge adequately to direction of rotation.
     if (speed > 0)
     {
-        analogWrite(ROLL_EN_PIN, abs(speed));
+        Serial.println("Speed positive");
         digitalWrite(IN_1_PIN, HIGH);
         digitalWrite(IN_2_PIN, LOW);
+        analogWrite(ROLL_EN_PIN, abs(speed));
     }
     else if (speed < 0)
     {
-        analogWrite(ROLL_EN_PIN, abs(speed));
+        Serial.println("Speed negative");
         digitalWrite(IN_1_PIN, LOW);
         digitalWrite(IN_2_PIN, HIGH);
+        analogWrite(ROLL_EN_PIN, abs(speed));   
     }
     else{
-    analogWrite(ROLL_EN_PIN, 0);
-    digitalWrite(IN_1_PIN, LOW);
-    digitalWrite(IN_2_PIN, LOW);
-    }
-    wristVelocity = 0;
+        analogWrite(ROLL_EN_PIN, 0);
+        digitalWrite(IN_1_PIN, LOW);
+        digitalWrite(IN_2_PIN, LOW);
+    } 
+    wristVelocity = speed;
 }
 
 // Angle manipulation functions.
