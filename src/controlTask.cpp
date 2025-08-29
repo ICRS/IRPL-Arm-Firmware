@@ -36,7 +36,7 @@ extern std::array<float, N_ENCODERS> desiredAngleArray;
 extern std::array<float, N_ENCODERS> currentAngleArray;
 
 void operateGripper(float normalisedSpeed);
-void rollWrist(float time);
+void rollWrist(int speed);
 
 int motorCommand(int ID, int newValue)
 {
@@ -50,7 +50,7 @@ int motorCommand(int ID, int newValue)
     }
     else if (ID == ROLL_ID)
     {
-        rollWrist(newValue);
+        rollWrist(int(newValue));
     }
     else
     {
@@ -112,32 +112,26 @@ void operateGripper(float normalisedSpeed)
 
 // The wrist "roll" (rotation around its axis) is controlled by a brushed DC motor.
 // Time is the time in ms to rotate by. Start with a small time and see how it goes. 500 is a good starting point.
-void rollWrist(float time)
+void rollWrist(int speed)
 {
     // Set inputs of H-Bridge adequately to direction of rotation.
-    if (time > 0)
+    if (speed > 0)
     {
-        analogWrite(ROLL_EN_PIN, 200);
+        analogWrite(ROLL_EN_PIN, abs(speed));
         digitalWrite(IN_1_PIN, HIGH);
         digitalWrite(IN_2_PIN, LOW);
     }
-    else
+    else if (speed < 0)
     {
-        analogWrite(ROLL_EN_PIN, 200);
+        analogWrite(ROLL_EN_PIN, abs(speed));
         digitalWrite(IN_1_PIN, LOW);
         digitalWrite(IN_2_PIN, HIGH);
-        time = -time;
     }
-    wristVelocity = (time > 0) ? 1 : -1;
-
-    unsigned long startRollTime = micros();
-    while (micros() - startRollTime < 2 * abs(time))
-    {
-    };
-    // Stop motor
+    else{
     analogWrite(ROLL_EN_PIN, 0);
     digitalWrite(IN_1_PIN, LOW);
     digitalWrite(IN_2_PIN, LOW);
+    }
     wristVelocity = 0;
 }
 
@@ -166,7 +160,7 @@ void updateMotors(){
 
     baseMotor.setSpeed(jointError[0]);
     shoulderMotor.setSpeed(jointError[1]);
-    elbowMotor.setSpeed(jointError[2]);
+    elbowMotor.setSpeed(0.9*jointError[2]);
     wristMotor.setSpeed(-1.7*jointError[3]);
 }
 
@@ -183,6 +177,7 @@ void controlTask(void *pvParameters)
 
     Serial.println("Set up controlTask");
     esp_task_wdt_delete(NULL);
+    rollWrist(0);
 
     for (;;)
     {
