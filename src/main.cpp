@@ -6,6 +6,7 @@
 #include "freertos/task.h"
 #include <Wire.h>
 
+
 // === GLOBAL VARIABLES === //
 
 // Global variables

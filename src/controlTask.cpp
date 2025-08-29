@@ -18,10 +18,11 @@ Stepper wristMotor(WRIST_STEP_PIN,WRIST_DIR_PIN, 0);
 TaskHandle_t controlTaskHandle = nullptr;
 
 // Create Servo object
-// Servo gripper;
+Servo gripper;
 float gripperSpeed = 0;
 
 int wristVelocity = 0;
+unsigned long last = 0;
 
 std::array<int, N_ENCODERS> stepPinArray;
 
@@ -96,18 +97,14 @@ void operateGripper(float normalisedSpeed)
     {
         normalisedSpeed = (normalisedSpeed < 0) ? -1 : 1;
     }
-    // Since the servo is continuous, writing an angle of "90" to it will stop it
-    // And writing maximum angles (0, 180) to it maximises its speed in either direction
-    // http://www.spt-servo.com/Product/5621733416.html
-    // float newGripperSpeed = 90 + (85*normalisedSpeed);
-    // gripperSpeed = newGripperSpeed;
-    // gripper.write(newGripperSpeed);
-    // 75
-    float newGripperSpeed = 127 + (25 * normalisedSpeed);
+    int newGripperSpeed = 90 + (85*normalisedSpeed);
+    Serial.println(newGripperSpeed);
     gripperSpeed = newGripperSpeed;
-    ledcWrite(0, newGripperSpeed);
-
-    // TODO: Add a time limit
+    unsigned long now = millis();
+    if (now-last <= 2000){
+        gripper.write(newGripperSpeed);
+    }
+    
 }
 
 // The wrist "roll" (rotation around its axis) is controlled by a brushed DC motor.
@@ -178,7 +175,7 @@ void controlTask(void *pvParameters)
     Serial.println("Set up controlTask");
     esp_task_wdt_delete(NULL);
     rollWrist(0);
-
+    gripper.attach(GRASP_PIN, 500, 2500);
     for (;;)
     {
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
