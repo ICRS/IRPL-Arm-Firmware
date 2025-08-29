@@ -3,9 +3,9 @@
 #include "tasks.h"
 #include "config.h"
 #include "stepper.h"
-
+#include <Deneyap_Servo.h>
 #include "PID_v1.h"
-#include <ESP32Servo.h>
+
 #define ANGLE_THRESHOLD 5.0
 
 // === GLOBAL VARIABLES === //
@@ -20,6 +20,7 @@ TaskHandle_t controlTaskHandle = nullptr;
 // Create Servo object
 Servo gripper;
 float gripperSpeed = 0;
+int normal = 0;
 
 int wristVelocity = 0;
 unsigned long last = 0;
@@ -47,7 +48,7 @@ int motorCommand(int ID, int newValue)
     }
     else if (ID == GRASP_ID)
     {
-        operateGripper(newValue);
+        gripperSpeed = newValue;
     }
     else if (ID == ROLL_ID)
     {
@@ -93,17 +94,15 @@ float motorStatus(int ID, bool isAngle)
 void operateGripper(float normalisedSpeed)
 {
     // Limit speed
+    Serial.println("Normalised");
+    Serial.println(normalisedSpeed);
     if (abs(normalisedSpeed) > 1)
     {
         normalisedSpeed = (normalisedSpeed < 0) ? -1 : 1;
     }
-    int newGripperSpeed = 90 + (85*normalisedSpeed);
+    float newGripperSpeed = 90 + (85*normalisedSpeed);
     Serial.println(newGripperSpeed);
-    gripperSpeed = newGripperSpeed;
-    unsigned long now = millis();
-    if (now-last <= 2000){
-        gripper.write(newGripperSpeed);
-    }
+    gripper.write(newGripperSpeed);
     
 }
 
@@ -159,6 +158,8 @@ void updateMotors(){
     shoulderMotor.setSpeed(jointError[1]);
     elbowMotor.setSpeed(0.9*jointError[2]);
     wristMotor.setSpeed(-1.7*jointError[3]);
+    Serial.println(gripperSpeed);
+    operateGripper(gripperSpeed);
 }
 
 // === TASK === //
@@ -171,11 +172,11 @@ void controlTask(void *pvParameters)
     /* Make the task execute at a specified frequency */
     const TickType_t xFrequency = configTICK_RATE_HZ / CONTROL_TASK_FREQUENCY;
     TickType_t xLastWakeTime = xTaskGetTickCount();
-
+    Serial.println(gripperSpeed);
     Serial.println("Set up controlTask");
     esp_task_wdt_delete(NULL);
     rollWrist(0);
-    gripper.attach(GRASP_PIN, 500, 2500);
+    gripper.attach(GRASP_PIN);
     for (;;)
     {
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
