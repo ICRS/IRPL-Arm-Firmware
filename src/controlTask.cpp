@@ -94,14 +94,11 @@ float motorStatus(int ID, bool isAngle)
 void operateGripper(float normalisedSpeed)
 {
     // Limit speed
-    Serial.println("Normalised");
-    Serial.println(normalisedSpeed);
     if (abs(normalisedSpeed) > 1)
     {
         normalisedSpeed = (normalisedSpeed < 0) ? -1 : 1;
     }
     float newGripperSpeed = 90 + (85*normalisedSpeed);
-    Serial.println(newGripperSpeed);
     gripper.write(newGripperSpeed);
     
 }
@@ -110,27 +107,26 @@ void operateGripper(float normalisedSpeed)
 // Speed-based.
 void rollWrist(int speed)
 {
-    Serial.print("Rotating wrist with speed: ");
-    Serial.println(speed);
+    if (abs(speed) > 1){
+        speed = (speed > 0) ? 1 : -1;
+    }
     // Set inputs of H-Bridge adequately to direction of rotation.
     if (speed > 0)
     {
-        Serial.println("Speed positive");
         digitalWrite(IN_1_PIN, HIGH);
         digitalWrite(IN_2_PIN, LOW);
-        analogWrite(ROLL_EN_PIN, abs(speed));
+        analogWrite(ROLL_EN_PIN, 255);
     }
     else if (speed < 0)
     {
-        Serial.println("Speed negative");
         digitalWrite(IN_1_PIN, LOW);
         digitalWrite(IN_2_PIN, HIGH);
-        analogWrite(ROLL_EN_PIN, abs(speed));   
+        analogWrite(ROLL_EN_PIN, 255);   
     }
     else{
-        analogWrite(ROLL_EN_PIN, 0);
         digitalWrite(IN_1_PIN, LOW);
         digitalWrite(IN_2_PIN, LOW);
+        analogWrite(ROLL_EN_PIN, 0);
     } 
     wristVelocity = speed;
 }
@@ -162,8 +158,14 @@ void updateMotors(){
     shoulderMotor.setSpeed(jointError[1]);
     elbowMotor.setSpeed(0.9*jointError[2]);
     wristMotor.setSpeed(-1.7*jointError[3]);
-    Serial.println(gripperSpeed);
     operateGripper(gripperSpeed);
+}
+
+void initPins(){
+    pinMode(IN_1_PIN, OUTPUT);
+    pinMode(IN_2_PIN, OUTPUT);
+    pinMode(ROLL_EN_PIN, OUTPUT);
+    pinMode(GRASP_PIN, OUTPUT);
 }
 
 // === TASK === //
@@ -172,15 +174,16 @@ void controlTask(void *pvParameters)
 {
     (void)pvParameters;
 
-
     /* Make the task execute at a specified frequency */
     const TickType_t xFrequency = configTICK_RATE_HZ / CONTROL_TASK_FREQUENCY;
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    Serial.println(gripperSpeed);
+
+    initPins();
     Serial.println("Set up controlTask");
     esp_task_wdt_delete(NULL);
-    rollWrist(0);
+
     gripper.attach(GRASP_PIN);
+
     for (;;)
     {
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
