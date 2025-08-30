@@ -111,13 +111,13 @@ void rollWrist(int speed)
         speed = (speed > 0) ? 1 : -1;
     }
     // Set inputs of H-Bridge adequately to direction of rotation.
-    if (speed > 0)
+    if (speed > 0.1)
     {
         digitalWrite(IN_1_PIN, HIGH);
         digitalWrite(IN_2_PIN, LOW);
         analogWrite(ROLL_EN_PIN, 255);
     }
-    else if (speed < 0)
+    else if (speed < -0.1)
     {
         digitalWrite(IN_1_PIN, LOW);
         digitalWrite(IN_2_PIN, HIGH);
