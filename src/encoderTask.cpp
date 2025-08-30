@@ -158,9 +158,10 @@ void encoderTask(void *pvParameters)
     accumulatedAngleArray = currentAngleArray;
     prevAngleArray = accumulatedAngleArray;
     convertToIKAngles();
-    // attempt to ensure desiredAngle = currentAngle on startUp (Need to test again)
+    // Ensure desiredAngle = currentAngle on start up
     desiredAngleArray = {0, 0, 0, 0};
     desiredAngleArray = currentAngleArray;
+    enableMotorMovement();
 
     Serial.println("Desired start");
     for (int i = 0; i < N_ENCODERS; i++)
