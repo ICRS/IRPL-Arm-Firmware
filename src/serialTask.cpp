@@ -116,6 +116,10 @@ void executeCommand(Message message){
         case MessageType::PH_PROBE:
             returnString = "<PH_PROBE:" + String(ph_adc_reading) + ">";
             break;
+        case MessageType::RESET:
+            returnString = "Resetting ESP32";
+            ESP.restart();
+            break;
         default:
             returnString = "<ERROR_CODE:" + String(SerialErrorCode::UNKNOWN_EXECUTION) + ">";
     }

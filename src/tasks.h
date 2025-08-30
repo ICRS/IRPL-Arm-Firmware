@@ -30,6 +30,7 @@ enum MessageType {
     CUR_POS,
     PH_PROBE,
     ERROR,
+    RESET,
 };
 
 enum SerialErrorCode {
