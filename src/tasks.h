@@ -56,6 +56,7 @@ struct Message {
 // Functions
 int motorCommand(int ID, int newValue);
 float motorStatus(int ID, bool isAngle);
+void enableMotorMovement();
 
 // Interrupts
 void IRAM_ATTR sampleEncodersISR();

@@ -27,18 +27,19 @@ unsigned long last = 0;
 
 std::array<int, N_ENCODERS> stepPinArray;
 
-
 std::array<uint32_t, N_ENCODERS> stepsNum;
 std::array<uint8_t, N_ENCODERS> stepsDir;
 
+bool motorMovementEnabled = false;
+
 // === EXTERNALS === //
 
-// remove
 extern std::array<float, N_ENCODERS> desiredAngleArray;
 extern std::array<float, N_ENCODERS> currentAngleArray;
 
 void operateGripper(float normalisedSpeed);
 void rollWrist(int speed);
+void enableMotorMovement();
 
 int motorCommand(int ID, int newValue)
 {
@@ -131,6 +132,10 @@ void rollWrist(int speed)
     wristVelocity = speed;
 }
 
+void enableMotorMovement(){
+    motorMovementEnabled = true;
+}
+
 // Angle manipulation functions.
 // Degree to radians.
 float d2r(int deg)
@@ -187,6 +192,8 @@ void controlTask(void *pvParameters)
     for (;;)
     {
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
-        updateMotors();
+        if (motorMovementEnabled){
+            updateMotors();
+        }   
     }
 }
