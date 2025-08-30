@@ -160,7 +160,7 @@ void updateMotors(){
         }
 
     baseMotor.setSpeed(jointError[0]);
-    shoulderMotor.setSpeed(jointError[1]);
+    shoulderMotor.setSpeed(2*jointError[1]);
     elbowMotor.setSpeed(0.9*jointError[2]);
     wristMotor.setSpeed(-1.7*jointError[3]);
     operateGripper(gripperSpeed);
@@ -187,7 +187,7 @@ void controlTask(void *pvParameters)
     Serial.println("Set up controlTask");
     esp_task_wdt_delete(NULL);
 
-    gripper.attach(GRASP_PIN);
+    gripper.attach(GRASP_PIN,6);
 
     for (;;)
     {
